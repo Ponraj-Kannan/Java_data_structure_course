@@ -1,0 +1,83 @@
+# ── Secrets & Environment Variables ─────────────────────────────────────────
+# Never commit real secrets — only .env.example should be tracked
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+
+# ── Node.js ───────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+
+# ── Build Output ──────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+.output/
+
+# ── Vite / Slidev Cache ───────────────────────────────────────────────────────
+.vite/
+.slidev/
+.cache/
+*.local
+
+# ── Vercel Deployment ─────────────────────────────────────────────────────────
+.vercel/
+
+# ── Firebase ──────────────────────────────────────────────────────────────────
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+
+# ── Editor & IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── OS Generated ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs & Diagnostics ────────────────────────────────────────────────────────
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# ── Temporary & Misc ──────────────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.orig
+coverage/
+.nyc_output/
+
+# ── Sensitive Data Files ──────────────────────────────────────────────────────
+# allowed-emails.json may contain private email lists — exclude if needed
+# Uncomment the line below to keep it private:
+# allowed-emails.json
+
+# ── Project-specific ──────────────────────────────────────────────────────────
+# Exclude local implementation notes not meant for the repo
+implementation_plan.md
