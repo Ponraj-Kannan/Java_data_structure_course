@@ -5,12 +5,12 @@ import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDTG-okJuoxNlxJ9rizvLkwOjjn4AT0pW8",
-  authDomain: "slidev-pro-vercel-app-db.firebaseapp.com",
-  projectId: "slidev-pro-vercel-app-db",
-  storageBucket: "slidev-pro-vercel-app-db.firebasestorage.app",
-  messagingSenderId: "390478860852",
-  appId: "1:390478860852:web:a4045993367fe4e740b061"
+  apiKey: "AIzaSyA_wP1gYMi8e9A0k1KspT5QNtAhRXerooY",
+  authDomain: "faceprep-java-dsa-course.firebaseapp.com",
+  projectId: "faceprep-java-dsa-course",
+  storageBucket: "faceprep-java-dsa-course.firebasestorage.app",
+  messagingSenderId: "437352167954",
+  appId: "1:437352167954:web:ce92b893cfce482ab1f6cb"
 }
 
 // Initialize Firebase — guard against duplicate initialization in Vite dev HMR
