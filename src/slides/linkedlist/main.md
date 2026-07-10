@@ -78,6 +78,7 @@ topic: slide13
 
 <InsertAtBeginningCircular topic="Circular Linkedlist - Insert At Beginning"/>
 
+
 ---
 topic: slide14
 ---
@@ -88,23 +89,49 @@ topic: slide14
 topic: slide15
 ---
 
-<Insertatpositioncircular topic="Circular Linkedlist - Insert At Position"/>
+<InsertAtPositionCircular topic="Circular Linkedlist - Insert At Position"/>
 
 ---
 topic: slide16
 ---
 
-<Deleteatbeginningcircular topic="Circular Linkedlist - Delete At Beginning"/>
+<DeleteAtBeginningCircular topic="Circular Linkedlist - Delete At Beginning"/>
+
+---
+topic: slide16
+---
+
+<DeleteAtEndCircular topic="Circular Linkedlist - Delete At End"/>
 
 ---
 topic: slide17
 ---
 
-<DeleteAtEndCircular topic="Circular Linkedlist - Delete At End"/>
+<DeleteAtPositionCircular topic="Circular Linkedlist - Delete At Position"/>
 
 
 ---
 topic: slide18
 ---
 
-<Deleteatindexcircular topic="Circular Linkedlist - Delete At Position"/>
+<StackPush topic="Stack using LinkedList - Push"/>
+
+
+---
+topic: slide16
+---
+
+<StackPop topic="Stack using LinkedList - Pop"/>
+
+---
+topic: slide17
+---
+
+<StackPeek topic="Stack using LinkedList - Peek"/>
+
+---
+topic: slide18
+---
+
+<StackIsEmpty topic="Stack using LinkedList - IsEmpty"/>
+
