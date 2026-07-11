@@ -114,24 +114,78 @@ topic: slide17
 topic: slide18
 ---
 
-<StackPush topic="Stack using LinkedList - Push"/>
+<StackPush topic="Stack - Push"/>
 
 
 ---
 topic: slide16
 ---
 
-<StackPop topic="Stack using LinkedList - Pop"/>
+<StackPop topic="Stack - Pop"/>
 
 ---
 topic: slide17
 ---
 
-<StackPeek topic="Stack using LinkedList - Peek"/>
+<StackPeek topic="Stack - Peek"/>
 
 ---
 topic: slide18
 ---
 
-<StackIsEmpty topic="Stack using LinkedList - IsEmpty"/>
+<StackIsEmpty topic="Stack - IsEmpty"/>
 
+---
+topic: slide1
+---
+
+<QueueEnqueue topic="Queue - Insertion"/>
+
+---
+topic: slide2
+---
+
+<Queuedequeue topic="Queue - Deletion"/>
+
+---
+topic: slide2
+---
+
+<QueueFront topic="Queue - Front"/>
+
+---
+topic: slide2
+---
+
+<QueueIsEmpty topic="Queue - IsEmpty"/>
+
+---
+topic: slide2
+---
+
+<QueueIsEmpty topic="Queue - IsEmpty"/>
+
+
+---
+topic: slide2
+---
+
+<DequeInsertFront topic="Deque - Insert At Beginning"/>
+
+---
+topic: slide2
+---
+
+<DequeInsertRear topic="Deque - Insert At Rear"/>
+
+---
+topic: slide2
+---
+
+<DequeDeleteFront topic="Deque - Delete At Beginning"/>
+
+---
+topic: slide2
+---
+
+<DequeDeleteRear topic="Deque - Delete At Rear"/>
