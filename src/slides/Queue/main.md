@@ -218,7 +218,7 @@ topic: slide4
 
 <DequeDeleteRear topic="Dequeue Using LinkedList - Delete Rear"/>
 
----
+<-- ---
 topic: slide5
 ---
 
@@ -240,7 +240,7 @@ topic: slide7
 topic: slide8
 ---
 
-<DequeSize topic="Dequeue Using LinkedList - Size"/>
+<DequeSize topic="Dequeue Using LinkedList - Size"/> -->
 
 ---
 topic: slide1
