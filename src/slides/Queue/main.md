@@ -32,11 +32,11 @@ topic: slide5
 topic: slide6
 ---
 
-<QueueSizeArray topic="Queue Using Array - Size"/> -->
+<QueueSizeArray topic="Queue Using Array - Size"/>
 
 <!-------------------------------------------------------------------------------------------------->
 
-<!-- ---
+---
 topic: slide1
 ---
 
@@ -64,11 +64,11 @@ topic: slide4
 topic: slide5
 ---
 
-<QueueSize topic="Queue Using LinkedList - Size"/> -->
+<QueueSize topic="Queue Using LinkedList - Size"/> 
 
 <!-------------------------------------------------------------------------------------------------->
 
-<!-- ---
+---
 topic: slide1
 ---
 
@@ -102,11 +102,11 @@ topic: slide5
 topic: slide6
 ---
 
-<CircularQueueSizeArray topic="Circular Queue Using Array - Size"/> -->
+<CircularQueueSizeArray topic="Circular Queue Using Array - Size"/>
 
 <!-------------------------------------------------------------------------------------------------->
 
-<!-- ---
+---
 topic: slide1
 ---
 
@@ -134,13 +134,11 @@ topic: slide4
 topic: slide5
 ---
 
-<QueueSizeCircular topic="Circular Queue Using LinkedList - Size"/> -->
-
-
+<QueueSizeCircular topic="Circular Queue Using LinkedList - Size"/>
 
 <!-------------------------------------------------------------------------------------------------->
 
-<!-- ---
+---
 topic: slide1
 ---
 
@@ -192,12 +190,11 @@ topic: slide8
 topic: slide9
 ---
 
-<DequeSizeArray topic="Dequeue Using Arrays - Size"/> -->
-
+<DequeSizeArray topic="Dequeue Using Arrays - Size"/>
 
 <!-------------------------------------------------------------------------------------------------->
 
-<!-- ---
+---
 topic: slide1
 ---
 
