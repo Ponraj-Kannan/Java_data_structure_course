@@ -218,7 +218,7 @@ topic: slide4
 
 <DequeDeleteRear topic="Dequeue Using LinkedList - Delete Rear"/>
 
-<-- ---
+<!-- ---
 topic: slide5
 ---
 
