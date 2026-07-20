@@ -242,6 +242,8 @@ topic: slide8
 
 <DequeSize topic="Dequeue Using LinkedList - Size"/> -->
 
+<!-------------------------------------------------------------------------------------------------->
+
 ---
 topic: slide1
 ---
@@ -259,5 +261,55 @@ topic: slide3
 ---
 
 <PriorityQueuePeekArray topic="Priority Queue Using Array - Peek"/>
+
+---
+topic: slide4
+---
+
+<PriorityQueueIsEmptyArray topic="Priority Queue Using Array - IsEmpty"/>
+
+---
+topic: slide5
+---
+
+<PriorityQueueIsFullArray topic="Priority Queue Using Array - IsFull"/>
+
+---
+topic: slide6
+---
+
+<PriorityQueueSizeArray topic="Priority Queue Using Array - Size"/>
+
+<!-------------------------------------------------------------------------------------------------->
+
+---
+topic: slide1
+---
+
+<PriorityQueueInsert topic="Priority Queue Using LinkedList - Insert"/>
+
+---
+topic: slide2
+---
+
+<PriorityQueueExtractMax topic="Priority Queue Using LinkedList - Extract Max"/>
+
+---
+topic: slide3
+---
+
+<PriorityQueuePeek topic="Priority Queue Using LinkedList - Peek"/>
+
+---
+topic: slide4
+---
+
+<PriorityQueueIsEmpty topic="Priority Queue Using LinkedList - IsEmpty"/>
+
+---
+topic: slide5
+---
+
+<PriorityQueueSize topic="Priority Queue Using LinkedList - Size"/>
 
 
