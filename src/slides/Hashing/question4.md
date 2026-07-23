@@ -11,7 +11,7 @@ const contents = [
 </script>
 
 <Slide
-  topic="Java Hashing"
-  sub-topic="Coding Problem 4 — Easy"
+  topic="Hashing"
+  sub-topic="Coding Problem 4"
   :contents="contents"
 />
