@@ -13,3 +13,7 @@ src: ./slides/Stack/main.md
 ---
 src: ./slides/Queue/main.md
 ---
+
+---
+src: ./slides/Hashing/main.md
+---
