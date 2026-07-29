@@ -71,6 +71,25 @@ const CODES = {
     ['c_travmove', '            prev = prev.next'],
     ['c_relink', '        prev.next = self.head'],
   ],
+  javascript: [
+    ['', 'class Node {'],
+    ['', '  constructor(data) { this.data = data; this.next = null; }'],
+    ['', '}'], ['', ''],
+    ['', 'class CircularLinkedList {'],
+    ['c_sethead', '  constructor() { this.head = null; }'], ['', ''],
+    ['c_del', '  deleteAtEnd() {'],
+    ['c_empty', '    if (this.head === null) return;'],
+    ['c_single', '    if (this.head.next === this.head) {'],
+    ['c_single', '      this.head = null;'],
+    ['c_single', '      return;'],
+    ['c_single', '    }'],
+    ['c_travstart', '    let prev = this.head;'],
+    ['c_travloop', '    while (prev.next.next !== this.head) {'],
+    ['c_travmove', '      prev = prev.next;'],
+    ['c_travloop', '    }'],
+    ['c_relink', '    prev.next = this.head;'],
+    ['', '  }'], ['', '}'],
+  ],
 };
 
 const PSEUDOCODE = [
@@ -420,6 +439,7 @@ onBeforeUnmount(() => {
               <option value="c">C</option>
               <option value="cpp">C++</option>
               <option value="python">Python</option>
+              <option value="javascript">JavaScript</option>
             </select>
           </div>
 
@@ -443,9 +463,11 @@ onBeforeUnmount(() => {
               </tbody>
             </table>
             <p class="ll-note">
-              Tip: if the list keeps a <code>tail</code> pointer (common optimization), deletion
-              at the end drops to <b>O(n)</b> for finding the second-to-last — a <code>prev</code>
-              pointer alongside <code>tail</code> makes it <b>O(1)</b>.
+              Tip: unlike deletion at the <b>beginning</b>, a <code>tail</code> pointer alone does not
+              speed this up &mdash; the node <em>before</em> the tail must still be found by traversing
+              from <code>head</code>, so it remains <b>O(n)</b> even with <code>tail</code> tracked.
+              Only if the list also maintains a <code>prev</code>/second-to-last reference (or is
+              doubly-linked) does this operation drop to <b>O(1)</b>.
             </p>
           </div>
         </div>

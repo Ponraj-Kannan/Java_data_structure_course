@@ -789,16 +789,19 @@ onBeforeUnmount(() => {
               <thead><tr><th>Case</th><th>Time</th><th>Why</th></tr></thead>
               <tbody>
                 <tr><td>pos == 1 (new head)</td><td>O(n)</td><td>must still traverse to the last node to redirect its <code>next</code> to the new head</td></tr>
+                <tr><td>pos == n + 1 (append at end)</td><td>O(n)</td><td>must traverse to the last node to link it forward to the new node</td></tr>
                 <tr><td>2 &le; pos &le; n</td><td>O(pos) &rarr; O(n) worst case</td><td>must walk from head to the node just before the target position</td></tr>
                 <tr><td>Space</td><td>O(1)</td><td>only one new node and a couple of pointers are allocated</td></tr>
               </tbody>
             </table>
             <p class="ll-note">
-              Note: position is only valid in the range <code>[1, n]</code> where <code>n</code> is the
-              current number of nodes (or exactly <code>1</code> for an empty list). Any position beyond
-              the current size, such as position 8 in a 3-node list, is rejected and the list is left unchanged.
-              Tip: keeping a <code>tail</code> pointer makes the <code>pos == 1</code> case <b>O(1)</b> too,
-              since you can skip the traversal and update <code>tail.next</code> directly.
+              Note: position is valid in the range <code>[1, n + 1]</code>, where <code>n</code> is the
+              current number of nodes &mdash; position <code>n + 1</code> means "insert after the last
+              node" (append). Any position outside that range, such as position 8 in a 3-node list
+              (valid range <code>[1, 4]</code>), is rejected and the list is left unchanged.
+              Tip: keeping a <code>tail</code> pointer makes both the <code>pos == 1</code> and
+              <code>pos == n + 1</code> cases <b>O(1)</b>, since you can skip the traversal and update
+              <code>tail.next</code> directly.
             </p>
           </div>
         </div>

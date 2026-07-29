@@ -115,6 +115,36 @@ const CODES = {
     ['c_display', '            temp = temp.next'],
     ['c_display', '            if temp == self.head: break'],
   ],
+  javascript: [
+    ['', 'class Node {'],
+    ['c_nodeNew', '  constructor(data) {'],
+    ['c_nodeNew', '    this.data = data;'],
+    ['c_nodeNew', '    this.next = null;'],
+    ['', '  }'], ['', '}'], ['', ''],
+    ['', 'class CircularLinkedList {'],
+    ['c_sethead', '  constructor() { this.head = null; }'], ['', ''],
+    ['c_insert', '  insertAtBeginning(data) {'],
+    ['c_nodeNew', '    const newNode = new Node(data);'],
+    ['c_empty', '    if (this.head === null) {'],
+    ['c_selfloop', '      newNode.next = newNode;  // points to itself'],
+    ['c_sethead', '      this.head = newNode;'],
+    ['c_empty', '      return;'], ['c_empty', '    }'],
+    ['c_travstart', '    let last = this.head;'],
+    ['c_travloop', '    while (last.next !== this.head) {'],
+    ['c_travmove', '      last = last.next;      // find tail node'],
+    ['c_travloop', '    }'],
+    ['c_setnext', '    newNode.next = this.head;   // link to old head'],
+    ['c_setlast', '    last.next = newNode;        // tail -> new node'],
+    ['c_sethead', '    this.head = newNode;        // update head'],
+    ['', '  }'], ['', ''],
+    ['c_display', '  display() {'], ['c_display', '    if (this.head === null) return;'],
+    ['c_display', '    let temp = this.head;'],
+    ['c_display', '    do {'],
+    ['c_display', '      console.log(temp.data + " ");'],
+    ['c_display', '      temp = temp.next;'],
+    ['c_display', '    } while (temp !== this.head);'],
+    ['', '  }'], ['', '}'],
+  ],
 };
 
 const PSEUDOCODE = [
@@ -213,6 +243,13 @@ function buildSteps(values) {
   });
 
   phaseStarts.display = steps.length;
+  if (nodes.length === 0) {
+    steps.push({
+      nodes: [], headAddr, badge: 'display(): head is null → list is empty, nothing to print', code: 'c_display', out: [], done: true,
+      vars: [frame('main()', [['head', 'null', true]]), frame('display()', [])],
+    });
+    return { steps, phaseStarts };
+  }
   let printed = [];
   steps.push({
     nodes: [...nodes], headAddr, tempAddr: headAddr, badge: 'display(): temp = head, loop is do…while', code: 'c_display', out: [],
@@ -579,6 +616,7 @@ onBeforeUnmount(() => {
               <option value="c">C</option>
               <option value="cpp">C++</option>
               <option value="python">Python</option>
+              <option value="javascript">JavaScript</option>
             </select>
 
           </div>
@@ -601,7 +639,7 @@ onBeforeUnmount(() => {
 
 
           <div v-else class="ll-info-scroll">
-            <h3>Time & Space Complexity</h3>
+            <h3>Time &amp; Space Complexity</h3>
             <table class="ll-complexity-table">
               <thead>
                 <tr><th>Case</th><th>Time</th><th>Why</th></tr>
