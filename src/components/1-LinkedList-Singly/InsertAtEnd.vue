@@ -110,6 +110,31 @@ const CODES = {
   ],
 };
 
+const PSEUDOCODE = [
+  'function insertAtEnd(data):',
+  '    newNode = new Node(data)',
+  '    if head == null:',
+  '        head = newNode',
+  '        return',
+  '    temp = head',
+  '    while temp.next != null:',
+  '        temp = temp.next',
+  '    temp.next = newNode',
+  '',
+  'function display():',
+  '    temp = head',
+  '    while temp != null:',
+  '        print(temp.data)',
+  '        temp = temp.next',
+  '',
+  'function main():',
+  '    read size',
+  '    for i = 0 to size - 1:',
+  '        read value',
+  '        insertAtEnd(value)',
+  '    display()',
+];
+
 const PHASES = [
   { id: 'build', label: 'Insert' },
   { id: 'display', label: 'Display' },
@@ -219,6 +244,7 @@ const speed = ref(650);
 const si = ref(0);
 const playing = ref(false);
 const vizHeight = ref(265);
+const rightTab = ref('code');
 const tableHeight = ref(60);
 const leftWidth = ref(58);
 
@@ -533,15 +559,20 @@ onBeforeUnmount(() => {
       <div class="ll-right-col">
         <div class="ll-code-panel">
           <div class="ll-code-header">
-            <select v-model="lang" class="ll-lang-select">
+            <div class="ll-tabbar">
+              <button class="ll-tab-btn" :class="{ active: rightTab === 'code' }" @click="rightTab = 'code'">Code</button>
+              <button class="ll-tab-btn" :class="{ active: rightTab === 'pseudo' }" @click="rightTab = 'pseudo'">Pseudocode</button>
+              <button class="ll-tab-btn" :class="{ active: rightTab === 'complexity' }" @click="rightTab = 'complexity'">Complexity</button>
+            </div>
+            <select v-if="rightTab === 'code'" v-model="lang" class="ll-lang-select">
               <option value="java">Java</option>
               <option value="c">C</option>
               <option value="cpp">C++</option>
               <option value="python">Python</option>
             </select>
-            <button class="ll-reset-btn" @click="resetCode">↺ Reset</button>
           </div>
-          <div class="ll-code-scroll">
+
+          <div v-if="rightTab === 'code'" class="ll-code-scroll">
             <pre class="ll-pre"><span
               v-for="(line, i) in codeLines"
               :key="i"
@@ -549,6 +580,40 @@ onBeforeUnmount(() => {
               :class="{ 'll-hl': line[0] && line[0] === s.code }"
             >{{ line[1] === '' ? ' ' : line[1] }}
 </span></pre>
+          </div>
+
+          <div v-else-if="rightTab === 'pseudo'" class="ll-code-scroll">
+            <pre class="ll-pre"><span
+              v-for="(line, i) in PSEUDOCODE"
+              :key="i"
+              class="ll-codeline"
+            >{{ line === '' ? ' ' : line }}
+</span></pre>
+          </div>
+
+          <div v-else class="ll-info-scroll">
+            <h3>Time &amp; Space Complexity</h3>
+            <table class="ll-complexity-table">
+              <thead><tr><th>Operation</th><th>Time</th><th>Space</th></tr></thead>
+              <tbody>
+                <tr><td>insertAtEnd(data) &mdash; empty list</td><td>O(1)</td><td>O(1)</td></tr>
+                <tr><td>insertAtEnd(data) &mdash; non-empty list</td><td>O(n)</td><td>O(1) auxiliary</td></tr>
+                <tr><td>display()</td><td>O(n)</td><td>O(1) auxiliary</td></tr>
+                <tr><td>Building a list of n elements</td><td>O(n&sup2;)</td><td>O(n) total</td></tr>
+              </tbody>
+            </table>
+            <p class="ll-note">
+              <b>Why insertion is O(n):</b> since there is no separate <code>tail</code> pointer,
+              every call to <code>insertAtEnd</code> must walk from <code>head</code> all the way to
+              the last node (<code>while temp.next != null</code>) before attaching the new node,
+              so a single insertion costs time proportional to the current list length.
+            </p>
+            <h3>Space</h3>
+            <p>
+              Each insertion allocates exactly one new node (O(1) auxiliary space) and uses only a
+              single traversal pointer &mdash; no recursion or extra data structures. The list itself
+              grows to O(n) total space to hold <code>n</code> elements.
+            </p>
           </div>
         </div>
       </div>
@@ -1120,6 +1185,33 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+.ll-tabbar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ll-tab-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.ll-tab-btn:hover {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+.ll-tab-btn.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #fff;
 }
 .ll-lang-select {
   background: var(--surface2);
@@ -1131,6 +1223,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   cursor: pointer;
   min-width: 110px;
+  margin-left: auto;
   transition: border-color .15s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
@@ -1143,7 +1236,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 3px rgba(240,77,77,.1);
 }
 .ll-reset-btn {
-  margin-left: auto;
   background: var(--surface2);
   border: 1px solid var(--border2);
   color: var(--coral);
@@ -1182,6 +1274,69 @@ onBeforeUnmount(() => {
   color: #15803d;
   border-radius: 3px;
   border-left: 2px solid var(--green);
+}
+
+/* COMPLEXITY / INFO PANEL */
+.ll-info-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 20px;
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.ll-info-scroll h3 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+}
+.ll-info-scroll h3:not(:first-child) {
+  margin-top: 18px;
+}
+.ll-info-scroll p {
+  margin: 0 0 10px;
+}
+.ll-info-scroll code {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--coral-dark);
+}
+.ll-complexity-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+}
+.ll-complexity-table th,
+.ll-complexity-table td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+}
+.ll-complexity-table th {
+  background: var(--surface2);
+  color: var(--text);
+  font-weight: 700;
+}
+.ll-complexity-table td:nth-child(2),
+.ll-complexity-table td:nth-child(3) {
+  font-family: 'Consolas', monospace;
+  font-weight: 700;
+  color: var(--coral-dark);
+}
+.ll-note {
+  background: var(--orange-light);
+  border-left: 3px solid var(--orange);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: var(--text2);
 }
 
 /* FOOTER */
