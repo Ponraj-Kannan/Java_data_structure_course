@@ -15,5 +15,10 @@ src: ./slides/Queue/main.md
 ---
 
 ---
+src: ./slides/binary-tree/main.md
+---
+
+---
 src: ./slides/Hashing/main.md
 ---
+
