@@ -1,0 +1,652 @@
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+
+const props = defineProps({
+  topic:    { type: String, default: 'Binary Tree — Height of the Tree' },
+  subTopic: { type: String, default: 'Recursive Traversal Approach (max(left, right) + 1)' },
+});
+
+const ADDR = (i) => (i + 1) * 1000;
+const fmt  = (a) => {
+  if (a === null || a === undefined) return 'null';
+  const str = String(a);
+  return str.startsWith('@') ? str : '@' + str;
+};
+
+/* ------------------------------------------------------------------ */
+/* Source code — tagged per logical step                               */
+/* ------------------------------------------------------------------ */
+const CODES = {
+  java: [
+    ['',              'class BinaryTree {'],
+    ['',              '    Node root;'],
+    ['',              ''],
+    ['c_call',        '    int findHeight(Node node) {'],
+    ['c_nullCheck',   '        if (node == null) {'],
+    ['c_nullReturn',  '            return 0;'],
+    ['',              '        }'],
+    ['c_recurLeft',   '        int leftHeight  = findHeight(node.left);'],
+    ['c_recurRight',  '        int rightHeight = findHeight(node.right);'],
+    ['c_compute',     '        int height = Math.max(leftHeight, rightHeight) + 1;'],
+    ['c_return',      '        return height;'],
+    ['',              '    }'],
+    ['',              ''],
+    ['c_main',        '    public static void main(String[] args) {'],
+    ['c_main',        '        BinaryTree tree = new BinaryTree();'],
+    ['c_main',        '        // ... build tree level order ...'],
+    ['c_main',        '        int h = tree.findHeight(tree.root);'],
+    ['c_main',        '        System.out.println("Tree Height: " + h);'],
+    ['c_main',        '    }'],
+    ['',              '}'],
+  ],
+  c: [
+    ['c_call',        'int findHeight(struct Node* node) {'],
+    ['c_nullCheck',   '    if (node == NULL) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftHeight  = findHeight(node->left);'],
+    ['c_recurRight',  '    int rightHeight = findHeight(node->right);'],
+    ['c_compute',     '    int height = (leftHeight > rightHeight ? leftHeight : rightHeight) + 1;'],
+    ['c_return',      '    return height;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int h = findHeight(root);'],
+    ['c_main',        '    printf("Tree Height: %d\\n", h);'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
+  ],
+  cpp: [
+    ['c_call',        'int findHeight(Node* node) {'],
+    ['c_nullCheck',   '    if (node == nullptr) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftHeight  = findHeight(node->left);'],
+    ['c_recurRight',  '    int rightHeight = findHeight(node->right);'],
+    ['c_compute',     '    int height = max(leftHeight, rightHeight) + 1;'],
+    ['c_return',      '    return height;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int h = findHeight(root);'],
+    ['c_main',        '    cout << "Tree Height: " << h << endl;'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
+  ],
+  python: [
+    ['c_call',        'def find_height(node):'],
+    ['c_nullCheck',   '    if node is None:'],
+    ['c_nullReturn',  '        return 0'],
+    ['c_recurLeft',   '    left_height  = find_height(node.left)'],
+    ['c_recurRight',  '    right_height = find_height(node.right)'],
+    ['c_compute',     '    height = max(left_height, right_height) + 1'],
+    ['c_return',      '    return height'],
+    ['',              ''],
+    ['c_main',        '# build tree level order ...'],
+    ['c_main',        'h = find_height(root)'],
+    ['c_main',        'print("Tree Height:", h)'],
+  ],
+};
+
+const PSEUDOCODE = [
+  'function findHeight(node):',
+  '    if node is null:',
+  '        return 0          // Base case: empty tree has height 0',
+  '',
+  '    leftHeight  = findHeight(node.left)',
+  '    rightHeight = findHeight(node.right)',
+  '',
+  '    height = max(leftHeight, rightHeight) + 1',
+  '    return height',
+  '',
+  '// Height = 1 + max depth of left & right subtrees',
+];
+
+function frame(title, rows) { return { title, rows }; }
+
+function buildLevelOrderTree(values) {
+  const nodes = [];
+  const edges = [];
+  if (!values.length) return { nodes, edges, rootId: null };
+  values.forEach((v, i) => {
+    nodes.push({ id: i, val: v, left: null, right: null, addr: ADDR(i) });
+  });
+  const rootId = 0;
+  const q = [0];
+  let idx = 1;
+  while (q.length && idx < nodes.length) {
+    const parentId = q.shift();
+    if (idx < nodes.length) { nodes[parentId].left = idx; edges.push({ from: parentId, to: idx }); q.push(idx); idx++; }
+    if (idx < nodes.length) { nodes[parentId].right = idx; edges.push({ from: parentId, to: idx }); q.push(idx); idx++; }
+  }
+  return { nodes, edges, rootId };
+}
+
+function buildSteps(nodes, edges, rootId) {
+  const steps    = [];
+  const nodesMap = {};
+  nodes.forEach(n => (nodesMap[n.id] = n));
+  const stackFrames = [];
+  let totalHeight = null;
+
+  function childAddrStr(childId) {
+    if (childId === null || childId === undefined) return 'null';
+    return nodesMap[childId] ? fmt(nodesMap[childId].addr) : 'null';
+  }
+
+  function snap(currId, badge, code, computedMap) {
+    steps.push({
+      nodes:       nodes.map(n => ({ ...n })),
+      edges:       edges.map(e => ({ ...e })),
+      rootId,
+      currId:      currId ?? null,
+      badge,
+      code,
+      totalHeight,
+      vars:        stackFrames.map(f => frame(f.title, f.rows)),
+      nodeHeights: computedMap ? { ...computedMap } : {},
+    });
+  }
+
+  if (rootId === null) {
+    totalHeight = 0;
+    snap(null, 'Tree is empty — findHeight returns 0.', 'c_main', {});
+    return steps;
+  }
+
+  const nodeHeights = {};
+  snap(null, 'main(): Start finding tree height by calling findHeight(root).', 'c_main', nodeHeights);
+
+  function findHeight(nodeId) {
+    const isNull = nodeId === null || nodeId === undefined;
+    const node   = isNull ? null : nodesMap[nodeId];
+    const nodeStr = isNull ? 'null' : fmt(ADDR(nodeId));
+
+    stackFrames.push({
+      title: 'findHeight(node = ' + nodeStr + ')',
+      rows:  [['node', nodeStr, true], ...(isNull ? [] : [['node.data', '' + node.val]])],
+    });
+
+    snap(nodeId, 'Call findHeight(node = ' + nodeStr + ')', 'c_call', nodeHeights);
+    snap(nodeId, 'Check: node == null? -> ' + (isNull ? 'TRUE (Base case: return 0)' : 'FALSE'), 'c_nullCheck', nodeHeights);
+
+    if (isNull) {
+      snap(null, 'node is null -> Base case reached. return 0.', 'c_nullReturn', nodeHeights);
+      stackFrames.pop();
+      return 0;
+    }
+
+    snap(nodeId, 'Recurse LEFT: call findHeight(node.left = ' + childAddrStr(node.left) + ')', 'c_recurLeft', nodeHeights);
+    const leftHeight = findHeight(node.left);
+
+    const topFrame = stackFrames[stackFrames.length - 1];
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftHeight', '' + leftHeight]];
+
+    snap(nodeId,
+      'Left subtree height of node ' + node.val + ' is ' + leftHeight + '. Recurse RIGHT: call findHeight(node.right = ' + childAddrStr(node.right) + ')',
+      'c_recurRight', nodeHeights);
+    const rightHeight = findHeight(node.right);
+
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftHeight', '' + leftHeight], ['rightHeight', '' + rightHeight]];
+
+    const h = Math.max(leftHeight, rightHeight) + 1;
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftHeight', '' + leftHeight], ['rightHeight', '' + rightHeight], ['height', '' + h]];
+    nodeHeights[nodeId] = h;
+
+    snap(nodeId, 'height = max(' + leftHeight + ', ' + rightHeight + ') + 1 = ' + h, 'c_compute', nodeHeights);
+    snap(nodeId, 'return ' + h + ' from findHeight(node ' + node.val + ' @' + node.addr + ')', 'c_return', nodeHeights);
+
+    stackFrames.pop();
+    return h;
+  }
+
+  const result = findHeight(rootId);
+  totalHeight = result;
+  snap(null, 'findHeight complete! Total height of the binary tree = ' + result, 'c_main', nodeHeights);
+  return steps;
+}
+
+const inpElems  = ref('1 2 3 4 5 6 7');
+const lang      = ref('java');
+const rightTab  = ref('code');
+const speed     = ref(900);
+const si        = ref(0);
+const playing   = ref(false);
+const steps     = ref([]);
+const vizHeight   = ref(320);
+const tableHeight = ref(90);
+const leftWidth   = ref(58);
+const mainRef         = ref(null);
+const leftColRef      = ref(null);
+const hResizerRef     = ref(null);
+const vizResizerRef   = ref(null);
+const tableResizerRef = ref(null);
+let playTimer = null;
+
+const currentStep = computed(() => steps.value[si.value] || {
+  nodes: [], edges: [], vars: [], badge: '', rootId: null, currId: null, nodeHeights: {}, totalHeight: null,
+});
+const s         = computed(() => currentStep.value);
+const codeLines = computed(() => CODES[lang.value] || []);
+const nodesById = computed(() => {
+  const m = {};
+  (currentStep.value.nodes || []).forEach(n => (m[n.id] = n));
+  return m;
+});
+function childAddr(childId) {
+  if (childId === null || childId === undefined) return null;
+  return nodesById.value[childId] ? nodesById.value[childId].addr : null;
+}
+
+const vizContainerW = ref(640);
+const vizContainerH = ref(320);
+const vizSvgRef     = ref(null);
+let   vizRO         = null;
+
+const NODE_W = 132, NODE_BOX_H = 44, NODE_H = 68;
+const MAX_COLS = 7, MAX_DEPTH = 2, SPACING_X = 70, LEVEL_H = 80;
+const PAD_TOP = 0, PAD_BOTTOM = 0, PAD_SIDE = 50;
+const START_Y = PAD_TOP + NODE_BOX_H / 2;
+const TREE_W = PAD_SIDE + MAX_COLS * SPACING_X;
+const FIXED_TOTAL_W = TREE_W + PAD_SIDE;
+const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM;
+const FIXED_VIEWBOX = '0 0 ' + FIXED_TOTAL_W + ' ' + FIXED_TOTAL_H;
+const GRID_SLOTS = [
+  { col: 3, depth: 0 }, { col: 1, depth: 1 }, { col: 5, depth: 1 },
+  { col: 0, depth: 2 }, { col: 2, depth: 2 }, { col: 4, depth: 2 }, { col: 6, depth: 2 },
+];
+
+const treeLayout = computed(() => {
+  const step = currentStep.value;
+  if (!step || !step.nodes) return { positions: {}, edges: [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
+  const positions = {};
+  step.nodes.forEach(n => {
+    if (n.id < GRID_SLOTS.length) {
+      const slot = GRID_SLOTS[n.id];
+      positions[n.id] = { x: PAD_SIDE + slot.col * SPACING_X + SPACING_X / 2, y: START_Y + slot.depth * LEVEL_H };
+    } else {
+      positions[n.id] = { x: PAD_SIDE + (n.id % MAX_COLS) * SPACING_X + SPACING_X / 2, y: START_Y + Math.floor(n.id / MAX_COLS) * LEVEL_H };
+    }
+  });
+  return { positions, edges: step.edges || [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H, spacingX: SPACING_X, levelH: LEVEL_H, treeWidth: TREE_W };
+});
+
+function pos(id) { return treeLayout.value.positions[id] || { x: 0, y: 0 }; }
+function edgeCoords(e) {
+  const pFrom = pos(e.from), pTo = pos(e.to);
+  const fromNode = nodesById.value[e.from];
+  const isLeft = fromNode && fromNode.left === e.to;
+  const hw = (treeLayout.value.nodeW || 132) / 2 * 0.6;
+  const nbh = treeLayout.value.nodeBoxH || 44;
+  return { x1: isLeft ? pFrom.x - hw : pFrom.x + hw, y1: pFrom.y, x2: pTo.x, y2: pTo.y - nbh / 2 };
+}
+function getPointerBadgesForNode(id) {
+  const step = currentStep.value;
+  if (!step) return [];
+  const ptrs = [];
+  if (step.rootId === id) ptrs.push({ name: 'root', label: 'root', color: '#3b82f6' });
+  if (step.currId === id) ptrs.push({ name: 'node', label: 'node', color: '#f97316' });
+  const count = ptrs.length;
+  if (!count) return [];
+  const nodeX = pos(id).x, nodeY = pos(id).y;
+  const nbh = treeLayout.value.nodeBoxH || 44;
+  const spread = Math.min(30, (treeLayout.value.nodeW || 132) * 0.22);
+  return ptrs.map((p, i) => {
+    let xOffset = 0;
+    if (count === 2) xOffset = i === 0 ? -spread : spread;
+    return { ...p, x: nodeX + xOffset, yText: nodeY - nbh / 2 - 22, yArrow: nodeY - nbh / 2 - 8 };
+  });
+}
+function nodeBoxClass(n) {
+  const step = currentStep.value;
+  if (!step) return '';
+  if (step.currId === n.id) return 'bt-box-cur';
+  if ((step.nodeHeights || {})[n.id] !== undefined) return 'bt-box-resolved';
+  return '';
+}
+
+function applyInput() {
+  const arr = inpElems.value.trim().split(/\s+/).filter(Boolean).map(Number).filter(n => Number.isFinite(n)).slice(0, 7);
+  clearTimeout(playTimer);
+  playing.value = false;
+  if (!arr.length) { steps.value = []; si.value = 0; return; }
+  const { nodes, edges, rootId } = buildLevelOrderTree(arr);
+  steps.value = buildSteps(nodes, edges, rootId);
+  si.value = 0;
+}
+function stepBy(n) {
+  if (!steps.value.length) return;
+  si.value = Math.min(steps.value.length - 1, Math.max(0, si.value + n));
+}
+function tick() {
+  if (si.value >= steps.value.length - 1) { playing.value = false; clearTimeout(playTimer); return; }
+  si.value++;
+  playTimer = setTimeout(tick, speed.value);
+}
+function togglePlay() {
+  if (!steps.value.length) return;
+  if (playing.value) { playing.value = false; clearTimeout(playTimer); return; }
+  if (si.value >= steps.value.length - 1) si.value = 0;
+  playing.value = true;
+  tick();
+}
+watch(speed, nv => { if (playing.value) { clearTimeout(playTimer); playTimer = setTimeout(tick, nv); } });
+
+function initHResizer() {
+  const rsz = hResizerRef.value;
+  if (!rsz) return;
+  let dragging = false, startX = 0, startW = 0;
+  const onDown = e => { dragging = true; startX = e.clientX; startW = leftWidth.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
+  const onMove = e => { if (!dragging) return; const cW = rsz.parentElement.getBoundingClientRect().width; leftWidth.value = Math.max(20, Math.min(80, startW + ((e.clientX - startX) / cW) * 100)); };
+  const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+  return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+}
+function initVResizer(refElem, valueRef, minH, maxH) {
+  const rsz = refElem.value;
+  if (!rsz) return;
+  let dragging = false, startY = 0, startH = 0;
+  const onDown = e => { dragging = true; startY = e.clientY; startH = valueRef.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
+  const onMove = e => { if (!dragging) return; valueRef.value = Math.max(minH, Math.min(maxH, startH + (e.clientY - startY))); };
+  const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+  return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+}
+let cleanupFns = [];
+function onKeydown(e) {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+  if (e.key === 'ArrowRight') stepBy(1);
+  else if (e.key === 'ArrowLeft') stepBy(-1);
+  else if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+}
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown);
+  cleanupFns.push(initHResizer());
+  cleanupFns.push(initVResizer(vizResizerRef, vizHeight, 160, 480));
+  cleanupFns.push(initVResizer(tableResizerRef, tableHeight, 50, 200));
+  applyInput();
+  if (vizSvgRef.value) {
+    vizRO = new ResizeObserver(entries => {
+      for (const entry of entries) { vizContainerW.value = entry.contentRect.width || 640; vizContainerH.value = entry.contentRect.height || 320; }
+    });
+    vizRO.observe(vizSvgRef.value);
+    const rect = vizSvgRef.value.getBoundingClientRect();
+    vizContainerW.value = rect.width || 640; vizContainerH.value = rect.height || 320;
+  }
+});
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown);
+  clearTimeout(playTimer);
+  cleanupFns.forEach(fn => fn && fn());
+  if (vizRO) vizRO.disconnect();
+});
+</script>
+
+<template>
+  <div class="slide-wrapper">
+    <div class="navbar">
+      <h2 class="navbar-title">{{ topic }}</h2>
+      <img src="../../assets/logo.png" alt="Logo" />
+    </div>
+    <div class="slide-body">
+      <div class="row-main">
+        <div class="ll-root">
+          <div class="ll-toolbar">
+            <label>Elements (max 7)</label>
+            <input type="text" v-model="inpElems" placeholder="e.g. 1 2 3 4 5 6 7" class="ll-text-input" @keyup.enter="applyInput" />
+            <button class="ll-viz-btn" @click="applyInput">&#9654; Visualize</button>
+            <div class="ll-nav-controls">
+              <button class="ll-nav-btn" title="First step" @click="stepBy(-steps.length)">&#171;</button>
+              <button class="ll-nav-btn" @click="stepBy(-1)">&#8249; Prev</button>
+              <button class="ll-play-btn" @click="togglePlay">{{ playing ? '⏸ Pause' : '▶ Play' }}</button>
+              <button class="ll-nav-btn" @click="stepBy(1)">Next &#8250;</button>
+              <button class="ll-nav-btn" title="Last step" @click="stepBy(steps.length)">&#187;</button>
+            </div>
+          </div>
+
+          <div class="ll-main" ref="mainRef">
+            <div class="ll-left-col" ref="leftColRef" :style="{ width: leftWidth + '%' }">
+              <div class="ll-viz-wrap" :style="{ height: vizHeight + 'px' }">
+                <div class="ll-perm-area" ref="vizSvgRef">
+                  <div class="ll-ptrs">
+                    <div class="ll-ptr-chip">root = <b class="ll-c-blue">{{ fmt(s.rootId !== null && s.rootId !== undefined ? ADDR(s.rootId) : null) }}</b></div>
+                    <div v-if="s.currId !== null && s.currId !== undefined" class="ll-ptr-chip">node = <b class="ll-c-orange">{{ fmt(ADDR(s.currId)) }}</b></div>
+                    <div v-else-if="steps.length" class="ll-ptr-chip">node = <b class="ll-c-orange">null</b></div>
+                    <div v-if="s.totalHeight !== null" class="ll-ptr-chip height-result-chip">Tree Height = <b>{{ s.totalHeight }}</b></div>
+                    <div v-else class="ll-ptr-chip height-calculating-chip">Calculating Height…</div>
+                  </div>
+                  <svg class="ll-svg" :viewBox="treeLayout.viewBox" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+                    <line v-for="(e, i) in treeLayout.edges" :key="'e-' + i"
+                      :x1="edgeCoords(e).x1" :y1="edgeCoords(e).y1"
+                      :x2="edgeCoords(e).x2" :y2="edgeCoords(e).y2" class="bt-edge-line" />
+                    <g v-for="n in s.nodes" :key="'ptrs' + n.id">
+                      <template v-for="p in getPointerBadgesForNode(n.id)" :key="p.name">
+                        <text :x="p.x" :y="p.yText" text-anchor="middle" :fill="p.color" class="heap-ptr-txt">{{ p.label }}</text>
+                        <text :x="p.x" :y="p.yArrow" text-anchor="middle" :fill="p.color" class="heap-ptr-arrow">&#8595;</text>
+                      </template>
+                    </g>
+                    <foreignObject v-for="n in s.nodes" :key="'n' + n.id"
+                      :x="pos(n.id).x - (treeLayout.nodeW || 132) / 2" :y="pos(n.id).y - (treeLayout.nodeBoxH || 44) / 2"
+                      :width="treeLayout.nodeW || 132" :height="treeLayout.nodeH || 68">
+                      <div xmlns="http://www.w3.org/1999/xhtml" class="ll-node-wrap">
+                        <div class="ll-box" :class="nodeBoxClass(n)">
+                          <div class="ll-node-top">
+                            <div class="ll-ptr ll-ptr-prev"><small>left</small>{{ fmt(childAddr(n.left)) }}</div>
+                            <div class="ll-data">
+                              {{ n.val }}
+                              <small v-if="s.nodeHeights[n.id] !== undefined" class="node-h-tag">h={{ s.nodeHeights[n.id] }}</small>
+                            </div>
+                            <div class="ll-ptr"><small>right</small>{{ fmt(childAddr(n.right)) }}</div>
+                          </div>
+                        </div>
+                        <div class="ll-addr-outside">@{{ n.addr }}</div>
+                      </div>
+                    </foreignObject>
+                  </svg>
+                </div>
+              </div>
+              <div class="ll-vresizer" ref="vizResizerRef"></div>
+
+              <div class="ll-legend">
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-normal"></span>unvisited</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-current"></span>active node (calculating height)</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-resolved"></span>height computed (subtrees done)</span>
+              </div>
+
+              <div class="ll-table-area" :style="{ height: tableHeight + 'px' }">
+                <div class="ll-table-title">Call stack frames &mdash; innermost (top of stack) = current</div>
+                <div class="ll-stack-line">
+                  <template v-if="s.vars && s.vars.length">
+                    <div v-for="(f, depth) in s.vars" :key="depth"
+                      class="ll-frame" :class="{ 'll-frame-cur': depth === s.vars.length - 1 }"
+                      :style="{ marginLeft: depth * 14 + 'px' }">
+                      {{ f.title }}(<span v-for="(r, i) in f.rows" :key="i">
+                        <span v-if="i > 0">, </span>
+                        <span class="ll-fname">{{ r[0] }}</span>=<span
+                          :class="r[2] ? 'll-c-blue' : (depth === s.vars.length - 1 ? 'll-c-orange' : 'll-c-green')"
+                          style="font-weight:700">{{ r[1] }}</span>
+                      </span>)<span v-if="depth === s.vars.length - 1" class="ll-now"> &#9668; current</span>
+                    </div>
+                  </template>
+                  <template v-else>&mdash;</template>
+                </div>
+              </div>
+              <div class="ll-vresizer" ref="tableResizerRef"></div>
+
+              <div class="ll-badge-wrap">
+                <div class="ll-badge" :class="{ 'height-badge-done': s.totalHeight !== null }">{{ s.badge }}</div>
+              </div>
+            </div>
+
+            <div class="ll-resizer" ref="hResizerRef"></div>
+
+            <div class="ll-right-col">
+              <div class="ll-code-panel">
+                <div class="ll-code-header">
+                  <div class="ll-tabbar">
+                    <button class="ll-tab-btn" :class="{ active: rightTab === 'code' }"       @click="rightTab = 'code'">Code</button>
+                    <button class="ll-tab-btn" :class="{ active: rightTab === 'pseudo' }"     @click="rightTab = 'pseudo'">Pseudocode</button>
+                    <button class="ll-tab-btn" :class="{ active: rightTab === 'complexity' }" @click="rightTab = 'complexity'">Complexity</button>
+                  </div>
+                  <select v-if="rightTab === 'code'" v-model="lang" class="ll-lang-select">
+                    <option value="java">Java</option>
+                    <option value="c">C</option>
+                    <option value="cpp">C++</option>
+                    <option value="python">Python</option>
+                  </select>
+                </div>
+                <div v-if="rightTab === 'code'" class="ll-code-scroll">
+                  <pre class="ll-pre"><span v-for="(line, i) in codeLines" :key="i"
+                    class="ll-codeline" :class="{ 'll-hl': line[0] && line[0] === s.code }"
+                  >{{ line[1] === '' ? ' ' : line[1] }}
+</span></pre>
+                </div>
+                <div v-else-if="rightTab === 'pseudo'" class="ll-code-scroll">
+                  <pre class="ll-pre"><span v-for="(line, i) in PSEUDOCODE" :key="i" class="ll-codeline">{{ line === '' ? ' ' : line }}
+</span></pre>
+                </div>
+                <div v-else class="ll-info-scroll">
+                  <h3>Time &amp; Space Complexity &mdash; Height of Binary Tree</h3>
+                  <table class="ll-complexity-table">
+                    <thead><tr><th>Metric</th><th>Complexity</th><th>Why</th></tr></thead>
+                    <tbody>
+                      <tr><td>Time Complexity</td><td>O(N)</td><td>Every node in the tree is visited once to evaluate height.</td></tr>
+                      <tr><td>Space (Balanced Tree)</td><td>O(log N)</td><td>Call stack depth equals tree height h = log&#8322; N.</td></tr>
+                      <tr><td>Space (Skewed Tree)</td><td>O(N)</td><td>Call stack depth equals N in a linear/skewed tree.</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="ll-note">
+                    <b>Core Recurrence:</b><br/>
+                    <code>height(node) = max(height(node.left), height(node.right)) + 1</code><br/>
+                    The height of a tree node is 1 plus the maximum height of its left and right subtrees. An empty subtree (null node) has height 0.
+                  </p>
+                  <h3>Algorithm Steps</h3>
+                  <p>1. Base case: if <code>node == null</code>, return <code>0</code>.<br/>
+                     2. Recurse left: <code>leftHeight = findHeight(node.left)</code>.<br/>
+                     3. Recurse right: <code>rightHeight = findHeight(node.right)</code>.<br/>
+                     4. Compute and return: <code>max(leftHeight, rightHeight) + 1</code>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ll-footer">
+            Step {{ si + 1 }} / {{ steps.length || 1 }}
+            <span class="ll-speed-wrap">Speed <input type="range" min="100" max="2000" step="100" v-model.number="speed" /></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.ll-root * { box-sizing: border-box; }
+.ll-root {
+  --coral: #F04D4D; --coral-dark: #d93e3e; --coral-light: #fff0f0;
+  --bg: #f5f6fa; --surface: #ffffff; --surface2: #f1f4f9;
+  --border: #e2e8f0; --border2: #cbd5e1; --text: #1e293b; --text2: #475569; --muted: #94a3b8;
+  --blue: #3b82f6; --blue-light: #eff6ff;
+  --green: #22c55e; --green-light: #f0fdf4;
+  --orange: #f97316; --orange-light: #fff7ed;
+  --node: #1d4ed8; --nodeCur: #c2410c; --nodeResolved: #8b5cf6;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --radius: 8px; --radius-sm: 6px;
+  background: var(--bg); color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px;
+  display: flex; flex-direction: column; height: 50vh; min-height: 600px; overflow: hidden; width: 100%;
+}
+@keyframes ll-pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.slide-wrapper { margin-top: -10px; margin-left: -30px; width: 107%; max-height: 100%; font-size: 0.8rem; font-weight: 400; }
+.slide-body { display: flex; flex-direction: column; border-radius: 4px; height: 100%; }
+.navbar { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0 10px; background-color: #ffffff; position: fixed; width: 94.7%; z-index: 10; }
+.navbar > img { height: 30px; }
+.navbar-title { margin: 0; font-size: 1.5rem; font-weight: 700; background-color: #ef5050; color: #ffffff; width: 80%; padding-left: 10px; margin-left: -10px; border-radius: 5px; }
+.row-main { width: 100%; height: 90%; margin-top: 37px; overflow-x: auto; overflow-y: auto; scrollbar-width: thin; }
+.ll-toolbar { display: flex; align-items: center; gap: 8px; padding: 7px 16px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+.ll-toolbar label { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 500; }
+.ll-text-input { background: var(--surface); border: 1px solid var(--border2); color: var(--text); border-radius: var(--radius-sm); padding: 5px 10px; font-size: 13px; font-family: monospace; transition: border-color .15s; width: 240px; }
+.ll-text-input:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 3px rgba(240,77,77,.1); }
+.ll-viz-btn { background: var(--coral); color: #fff; border: none; padding: 6px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; font-weight: 600; box-shadow: var(--shadow-sm); transition: filter .15s; }
+.ll-viz-btn:hover { filter: brightness(1.08); }
+.ll-nav-controls { display: flex; margin-left: auto; align-items: center; gap: 4px; flex-shrink: 0; }
+.ll-nav-btn { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); padding: 5px 11px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; font-weight: 500; transition: all .15s; white-space: nowrap; }
+.ll-nav-btn:hover { background: var(--surface); border-color: var(--coral); color: var(--coral); }
+.ll-play-btn { background: var(--blue-light); border: 1px solid var(--blue); color: var(--blue); min-width: 72px; font-weight: 600; padding: 5px 11px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; transition: all .15s; }
+.ll-play-btn:hover { background: var(--blue); color: #fff; }
+.ll-main { display: flex; flex: 1; overflow: hidden; position: relative; }
+.ll-left-col { display: flex; flex-direction: column; overflow: hidden; min-width: 200px; max-width: 72%; }
+.ll-resizer { width: 5px; cursor: col-resize; background: var(--border); flex-shrink: 0; transition: background .15s; position: relative; z-index: 20; }
+.ll-resizer:hover, .ll-resizer.drag { background: var(--coral); }
+.ll-right-col { display: flex; flex-direction: column; flex: 1; overflow: hidden; min-width: 200px; min-height: 0; }
+.ll-viz-wrap { flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+.ll-perm-area { display: flex; flex-direction: column; align-items: stretch; height: 100%; }
+.ll-ptrs { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px 4px; min-height: 36px; }
+.ll-ptr-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px 10px; font-size: 12px; font-family: monospace; box-shadow: var(--shadow-sm); }
+.height-result-chip      { background: #f3e8ff; border-color: #a855f7; color: #6b21a8; font-weight: 700; }
+.height-calculating-chip { background: var(--orange-light); border-color: var(--orange); color: #c2410c; font-weight: 600; }
+.ll-c-blue   { color: var(--blue); }
+.ll-c-orange { color: var(--orange); }
+.ll-c-green  { color: var(--green); }
+.ll-svg { display: block; flex: 1; min-height: 0; }
+.bt-edge-line { stroke: #cbd5e1; stroke-width: 2px; }
+.heap-ptr-txt   { font-size: 13px; font-weight: 800; font-family: 'Consolas', 'Fira Code', monospace; }
+.heap-ptr-arrow { font-size: 14px; font-weight: 900; font-family: system-ui, sans-serif; }
+.ll-node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; }
+.ll-box { display: flex; flex-direction: column; border: 2px solid var(--blue); border-radius: var(--radius-sm); overflow: hidden; background: var(--node); width: 100%; height: 44px; color: #fff; animation: ll-pop .3s ease; box-shadow: var(--shadow-sm); transition: background .3s, border-color .3s; }
+.bt-box-cur      { border-color: var(--orange) !important; background: var(--nodeCur)      !important; box-shadow: 0 0 0 3px rgba(249,115,22,.25) !important; }
+.bt-box-resolved { border-color: #a855f7       !important; background: var(--nodeResolved) !important; box-shadow: 0 0 0 3px rgba(168,85,247,.3)  !important; }
+.ll-node-top { display: flex; flex: 1; width: 100%; height: 100%; }
+.ll-data { padding: 4px 4px; font-weight: 700; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; line-height: 1.1; }
+.node-h-tag { font-size: 9px; font-weight: 800; color: #fef08a; background: rgba(0,0,0,.35); padding: 0 4px; border-radius: 3px; margin-top: 1px; }
+.ll-ptr { padding: 2px 4px; background: rgba(0,0,0,.2); font-size: 10px; color: rgba(255,255,255,.85); border-left: 1px solid rgba(255,255,255,.15); font-family: 'Consolas', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex: 1; }
+.ll-ptr-prev { border-left: none; border-right: 1px solid rgba(255,255,255,.15); }
+.ll-ptr small { color: rgba(255,255,255,.5); font-size: 9px; }
+.ll-addr-outside { font-size: 11px; font-weight: 600; font-family: 'Consolas', 'Fira Code', monospace; color: #475569; margin-top: 3px; text-align: center; line-height: 1; white-space: nowrap; }
+.ll-vresizer { height: 5px; cursor: row-resize; background: var(--border); flex-shrink: 0; transition: background .15s; position: relative; z-index: 20; }
+.ll-vresizer:hover, .ll-vresizer.drag { background: var(--coral); }
+.ll-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
+.ll-leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.ll-legdot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; display: inline-block; }
+.ll-legdot-normal   { background: var(--node);         border: 1.5px solid var(--blue); }
+.ll-legdot-current  { background: var(--nodeCur);      border: 1.5px solid var(--orange); }
+.ll-legdot-resolved { background: var(--nodeResolved); border: 1.5px solid #a855f7; }
+.ll-table-area { flex-shrink: 0; padding: 8px 14px; border-bottom: 1px solid var(--border); overflow: auto; background: var(--surface); }
+.ll-table-title { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-style: italic; }
+.ll-stack-line { font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.8; }
+.ll-frame { font-family: 'Consolas', monospace; font-size: 11.5px; color: var(--text2); padding: 1px 0; white-space: nowrap; }
+.ll-frame-cur { color: var(--orange); background: var(--orange-light); border-radius: 4px; padding: 1px 5px; }
+.ll-fname { color: var(--text2); }
+.ll-now { color: var(--orange); font-size: 10px; margin-left: 6px; }
+.ll-badge-wrap { padding: 6px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 36px; display: flex; align-items: center; background: var(--surface); }
+.ll-badge { display: inline-block; padding: 4px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--coral); background: var(--coral-light); font-size: 11px; color: var(--coral-dark); line-height: 1.4; word-break: break-word; font-weight: 500; }
+.height-badge-done { border-left-color: #a855f7 !important; background: #f3e8ff !important; color: #6b21a8 !important; }
+.ll-code-panel { display: flex; flex-direction: column; height: 75%; overflow: hidden; }
+.ll-code-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; box-shadow: var(--shadow-sm); flex-wrap: wrap; }
+.ll-tabbar { display: flex; gap: 4px; flex-wrap: wrap; }
+.ll-tab-btn { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); padding: 5px 11px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; font-weight: 600; transition: all .15s; white-space: nowrap; }
+.ll-tab-btn:hover { border-color: var(--coral); color: var(--coral); }
+.ll-tab-btn.active { background: var(--coral); border-color: var(--coral); color: #fff; }
+.ll-lang-select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 5px 28px 5px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; min-width: 110px; margin-left: auto; transition: border-color .15s; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+.ll-lang-select:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 3px rgba(240,77,77,.1); }
+.ll-code-scroll { flex: 1; overflow: auto; min-height: 0; padding: 14px 16px; background: #f8fafc; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+.ll-pre { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.65; white-space: pre; color: var(--text); margin: 0; }
+.ll-codeline { display: block; margin: 0 -16px; padding: 0 16px; }
+.ll-hl { background: #dcfce7; color: #15803d; border-radius: 3px; border-left: 2px solid var(--green); }
+.ll-info-scroll { flex: 1; overflow: auto; min-height: 0; padding: 16px 20px; background: var(--surface); color: var(--text2); font-size: 13px; line-height: 1.6; }
+.ll-info-scroll h3 { margin: 0 0 10px; color: var(--text); font-size: 14px; font-weight: 700; }
+.ll-info-scroll h3:not(:first-child) { margin-top: 18px; }
+.ll-info-scroll p { margin: 0 0 10px; }
+.ll-info-scroll b { color: var(--text); }
+.ll-info-scroll code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: 'Consolas', monospace; font-size: 12px; color: var(--coral-dark); }
+.ll-complexity-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12.5px; }
+.ll-complexity-table th, .ll-complexity-table td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+.ll-complexity-table th { background: var(--surface2); color: var(--text); font-weight: 700; }
+.ll-complexity-table td:nth-child(2) { font-family: 'Consolas', monospace; font-weight: 700; color: var(--coral-dark); white-space: nowrap; }
+.ll-note { background: var(--orange-light); border-left: 3px solid var(--orange); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12.5px; color: var(--text2); margin-bottom: 10px; }
+.ll-footer { padding: 4px 16px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; }
+.ll-speed-wrap { display: flex; align-items: center; gap: 5px; margin-left: 16px; }
+.ll-speed-wrap input[type=range] { width: 90px; accent-color: var(--coral); }
+</style>
