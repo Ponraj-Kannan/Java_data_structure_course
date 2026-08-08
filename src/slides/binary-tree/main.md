@@ -66,9 +66,4 @@ import BinaryTreeDiameter    from '../../components/05-BinaryTree/BinaryTreeDiam
 
 <BinaryTreeDiameter topic="Binary Tree — Diameter of the Tree" subTopic="Recursive Traversal Approach (leftHeight + rightHeight)" />
 
-
-
-
-
-
-
+---
