@@ -19,6 +19,10 @@ src: ./slides/binary-tree/main.md
 ---
 
 ---
+src: ./slides/binary-search-tree/main.md
+---
+
+---
 src: ./slides/Hashing/main.md
 ---
 
