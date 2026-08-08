@@ -1,12 +1,3 @@
-<script setup>
-import BinarySearchTreeCreation   from '../../components/06-BinarySearchTree/BinarySearchTreeCreation.vue';
-import BinarySearchTreeSearch     from '../../components/06-BinarySearchTree/BinarySearchTreeSearch.vue';
-import BinaryTreeBSTLargest  from '../../components/06-BinarySearchTree/BinaryTreeBSTLargest.vue';
-import BinarySearchTreeDeletion   from '../../components/06-BinarySearchTree/BinarySearchTreeDeletion.vue';
-import BinarySearchTreeValidation from '../../components/06-BinarySearchTree/BinarySearchTreeValidation.vue';
-import BinarySearchTreeSortedArray from '../../components/06-BinarySearchTree/BinarySearchTreeSortedArray.vue';
-</script>
-
 ---
 
 <BinarySearchTreeCreation topic="Binary Search Tree — Creation" subTopic="BST Property Insertion" />
@@ -30,5 +21,3 @@ import BinarySearchTreeSortedArray from '../../components/06-BinarySearchTree/Bi
 ---
 
 <BinarySearchTreeSortedArray topic="Binary Search Tree — Convert Sorted Array to BST" subTopic="Divide & Conquer Approach (Middle Element as Subtree Root)" />
-
----
