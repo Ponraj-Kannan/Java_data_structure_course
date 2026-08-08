@@ -1,8 +1,3 @@
----
-theme: default
-title: Binary Tree Visualization
----
-
 <script setup>
 import BinaryTreeTerminology from '../../components/05-BinaryTree/BinaryTreeTerminology.vue';
 import BinaryTreeCreation    from '../../components/05-BinaryTree/BinaryTreeCreation.vue';
