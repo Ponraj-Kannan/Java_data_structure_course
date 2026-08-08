@@ -106,21 +106,58 @@ const PSEUDOCODE = [
 
 function frame(title, rows) { return { title, rows }; }
 
+function parseInputTokens(inputStr) {
+  const raw = inputStr.trim().split(/[\s,]+/).filter(Boolean).slice(0, 15);
+  return raw.map(tok => {
+    const lower = tok.toLowerCase();
+    if (lower === 'null' || lower === 'n' || lower === 'none' || tok === '-') {
+      return null;
+    }
+    const num = Number(tok);
+    return Number.isFinite(num) ? num : null;
+  });
+}
+
 function buildLevelOrderTree(values) {
   const nodes = [];
   const edges = [];
-  if (!values.length) return { nodes, edges, rootId: null };
-  values.forEach((v, i) => {
-    nodes.push({ id: i, val: v, left: null, right: null, addr: ADDR(i) });
-  });
+  if (!values.length || values[0] === null) return { nodes, edges, rootId: null };
+
+  nodes.push({ id: 0, val: values[0], left: null, right: null, addr: ADDR(0), gridPos: 0 });
   const rootId = 0;
-  const q = [0];
-  let idx = 1;
-  while (q.length && idx < nodes.length) {
-    const parentId = q.shift();
-    if (idx < nodes.length) { nodes[parentId].left = idx; edges.push({ from: parentId, to: idx }); q.push(idx); idx++; }
-    if (idx < nodes.length) { nodes[parentId].right = idx; edges.push({ from: parentId, to: idx }); q.push(idx); idx++; }
+  const q = [nodes[0]];
+  let vIdx = 1;
+
+  while (q.length && vIdx < values.length) {
+    const parent = q.shift();
+
+    if (vIdx < values.length) {
+      const leftVal = values[vIdx];
+      if (leftVal !== null) {
+        const childId = nodes.length;
+        const childNode = { id: childId, val: leftVal, left: null, right: null, addr: ADDR(vIdx), gridPos: vIdx };
+        nodes.push(childNode);
+        parent.left = childId;
+        edges.push({ from: parent.id, to: childId });
+        q.push(childNode);
+      }
+      vIdx++;
+    }
+
+    if (vIdx < values.length) {
+      const rightVal = values[vIdx];
+      if (rightVal !== null) {
+        const childId = nodes.length;
+        const childNode = { id: childId, val: rightVal, left: null, right: null, addr: ADDR(vIdx), gridPos: vIdx };
+        nodes.push(childNode);
+        parent.right = childId;
+        edges.push({ from: parent.id, to: childId });
+        q.push(childNode);
+      }
+      vIdx++;
+    }
   }
+
   return { nodes, edges, rootId };
 }
 
@@ -247,30 +284,101 @@ let   vizRO         = null;
 
 const NODE_W = 132, NODE_BOX_H = 44, NODE_H = 68;
 const MAX_COLS = 7, MAX_DEPTH = 2, SPACING_X = 70, LEVEL_H = 80;
-const PAD_TOP = 0, PAD_BOTTOM = 0, PAD_SIDE = 50;
+const PAD_TOP = 35, PAD_BOTTOM = 0, PAD_SIDE = 50;
 const START_Y = PAD_TOP + NODE_BOX_H / 2;
 const TREE_W = PAD_SIDE + MAX_COLS * SPACING_X;
 const FIXED_TOTAL_W = TREE_W + PAD_SIDE;
 const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM;
 const FIXED_VIEWBOX = '0 0 ' + FIXED_TOTAL_W + ' ' + FIXED_TOTAL_H;
-const GRID_SLOTS = [
-  { col: 3, depth: 0 }, { col: 1, depth: 1 }, { col: 5, depth: 1 },
-  { col: 0, depth: 2 }, { col: 2, depth: 2 }, { col: 4, depth: 2 }, { col: 6, depth: 2 },
-];
 
 const treeLayout = computed(() => {
   const step = currentStep.value;
-  if (!step || !step.nodes) return { positions: {}, edges: [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
-  const positions = {};
+  if (!step || !step.nodes || !step.nodes.length) {
+    return { positions: {}, edges: [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
+  }
+
+  const nodesMap = {};
   step.nodes.forEach(n => {
-    if (n.id < GRID_SLOTS.length) {
-      const slot = GRID_SLOTS[n.id];
-      positions[n.id] = { x: PAD_SIDE + slot.col * SPACING_X + SPACING_X / 2, y: START_Y + slot.depth * LEVEL_H };
-    } else {
-      positions[n.id] = { x: PAD_SIDE + (n.id % MAX_COLS) * SPACING_X + SPACING_X / 2, y: START_Y + Math.floor(n.id / MAX_COLS) * LEVEL_H };
-    }
+    nodesMap[n.id] = { ...n };
   });
-  return { positions, edges: step.edges || [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H, spacingX: SPACING_X, levelH: LEVEL_H, treeWidth: TREE_W };
+
+  const rootId = step.rootId;
+  if (rootId === null || rootId === undefined || !nodesMap[rootId]) {
+    return { positions: {}, edges: step.edges || [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
+  }
+
+  function assignDepth(id, depth) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    nodesMap[id].depth = depth;
+    assignDepth(nodesMap[id].left, depth + 1);
+    assignDepth(nodesMap[id].right, depth + 1);
+  }
+  assignDepth(rootId, 0);
+
+  const inOrderNodes = [];
+  function inOrder(id) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    inOrder(nodesMap[id].left);
+    inOrderNodes.push(id);
+    inOrder(nodesMap[id].right);
+  }
+  inOrder(rootId);
+
+  const rawX = {};
+  const SPACING = 90;
+  inOrderNodes.forEach((id, idx) => {
+    rawX[id] = idx * SPACING;
+  });
+
+  function adjustParentX(id) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    const node = nodesMap[id];
+    adjustParentX(node.left);
+    adjustParentX(node.right);
+
+    if (node.left !== null && node.left !== undefined && nodesMap[node.left] &&
+        node.right !== null && node.right !== undefined && nodesMap[node.right]) {
+      rawX[id] = (rawX[node.left] + rawX[node.right]) / 2;
+    }
+  }
+  adjustParentX(rootId);
+
+  let minX = Infinity, maxX = -Infinity, maxDepth = 0;
+  inOrderNodes.forEach(id => {
+    if (rawX[id] < minX) minX = rawX[id];
+    if (rawX[id] > maxX) maxX = rawX[id];
+    if ((nodesMap[id].depth || 0) > maxDepth) maxDepth = nodesMap[id].depth;
+  });
+
+  const PAD_SIDE = 70;
+  const CANVAS_W = 640;
+  const contentW = (maxX - minX) + 2 * PAD_SIDE;
+  const shiftX = Math.max(0, (CANVAS_W - contentW) / 2);
+  const totalW = Math.max(CANVAS_W, contentW);
+  const totalH = Math.max(320, START_Y + maxDepth * LEVEL_H + NODE_H / 2 + 20);
+
+  const positions = {};
+  inOrderNodes.forEach(id => {
+    const node = nodesMap[id];
+    positions[id] = {
+      x: rawX[id] - minX + PAD_SIDE + shiftX,
+      y: START_Y + (node.depth || 0) * LEVEL_H,
+    };
+  });
+
+  const viewBox = '0 0 ' + totalW + ' ' + totalH;
+
+  return {
+    positions,
+    edges: step.edges || [],
+    viewBox,
+    nodeW: NODE_W,
+    nodeBoxH: NODE_BOX_H,
+    nodeH: NODE_H,
+    spacingX: SPACING,
+    levelH: LEVEL_H,
+    treeWidth: totalW
+  };
 });
 
 function pos(id) { return treeLayout.value.positions[id] || { x: 0, y: 0 }; }
@@ -308,11 +416,11 @@ function nodeBoxClass(n) {
 }
 
 function applyInput() {
-  const arr = inpElems.value.trim().split(/\s+/).filter(Boolean).map(Number).filter(n => Number.isFinite(n)).slice(0, 7);
+  const tokens = parseInputTokens(inpElems.value);
   clearTimeout(playTimer);
   playing.value = false;
-  if (!arr.length) { steps.value = []; si.value = 0; return; }
-  const { nodes, edges, rootId } = buildLevelOrderTree(arr);
+  if (!tokens.length) { steps.value = []; si.value = 0; return; }
+  const { nodes, edges, rootId } = buildLevelOrderTree(tokens);
   steps.value = buildSteps(nodes, edges, rootId);
   si.value = 0;
 }

@@ -101,32 +101,55 @@ function frame(title, rows) { return { title, rows }; }
 /* ------------------------------------------------------------------ */
 /* Level order tree builder (instant — silent)                         */
 /* ------------------------------------------------------------------ */
+function parseInputTokens(inputStr) {
+  const raw = inputStr.trim().split(/[\s,]+/).filter(Boolean).slice(0, 15);
+  return raw.map(tok => {
+    const lower = tok.toLowerCase();
+    if (lower === 'null' || lower === 'n' || lower === 'none' || tok === '-') {
+      return null;
+    }
+    const num = Number(tok);
+    return Number.isFinite(num) ? num : null;
+  });
+}
+
 function buildLevelOrderTree(values) {
   const nodes = [];
   const edges = [];
-  if (!values.length) return { nodes, edges, rootId: null };
+  if (!values.length || values[0] === null) return { nodes, edges, rootId: null };
 
-  values.forEach((v, i) => {
-    nodes.push({ id: i, val: v, left: null, right: null, addr: ADDR(i) });
-  });
-
+  nodes.push({ id: 0, val: values[0], left: null, right: null, addr: ADDR(0), gridPos: 0 });
   const rootId = 0;
-  const q = [0];
-  let idx = 1;
+  const q = [nodes[0]];
+  let vIdx = 1;
 
-  while (q.length && idx < nodes.length) {
-    const parentId = q.shift();
-    if (idx < nodes.length) {
-      nodes[parentId].left = idx;
-      edges.push({ from: parentId, to: idx });
-      q.push(idx);
-      idx++;
+  while (q.length && vIdx < values.length) {
+    const parent = q.shift();
+
+    if (vIdx < values.length) {
+      const leftVal = values[vIdx];
+      if (leftVal !== null) {
+        const childId = nodes.length;
+        const childNode = { id: childId, val: leftVal, left: null, right: null, addr: ADDR(vIdx), gridPos: vIdx };
+        nodes.push(childNode);
+        parent.left = childId;
+        edges.push({ from: parent.id, to: childId });
+        q.push(childNode);
+      }
+      vIdx++;
     }
-    if (idx < nodes.length) {
-      nodes[parentId].right = idx;
-      edges.push({ from: parentId, to: idx });
-      q.push(idx);
-      idx++;
+
+    if (vIdx < values.length) {
+      const rightVal = values[vIdx];
+      if (rightVal !== null) {
+        const childId = nodes.length;
+        const childNode = { id: childId, val: rightVal, left: null, right: null, addr: ADDR(vIdx), gridPos: vIdx };
+        nodes.push(childNode);
+        parent.right = childId;
+        edges.push({ from: parent.id, to: childId });
+        q.push(childNode);
+      }
+      vIdx++;
     }
   }
 
@@ -278,9 +301,7 @@ const MAX_COLS   = 7;
 const MAX_DEPTH  = 2;
 const SPACING_X  = 70;
 const LEVEL_H    = 80;
-const PAD_TOP    = 0;
-const PAD_BOTTOM = 0;
-const PAD_SIDE   = 50;
+const PAD_TOP = 35, PAD_BOTTOM = 0, PAD_SIDE = 50;
 
 const START_Y    = PAD_TOP + NODE_BOX_H / 2; // 22
 
@@ -290,51 +311,93 @@ const FIXED_TOTAL_W = TREE_W + PAD_SIDE;                // 590
 const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM; // 216
 const FIXED_VIEWBOX = `0 0 ${FIXED_TOTAL_W} ${FIXED_TOTAL_H}`;
 
-// Position lookup for 7-node complete binary tree slots (level order 0..6)
-const GRID_SLOTS = [
-  { col: 3, depth: 0 }, // 0: Root
-  { col: 1, depth: 1 }, // 1: Left child of root
-  { col: 5, depth: 1 }, // 2: Right child of root
-  { col: 0, depth: 2 }, // 3: Left child of 1
-  { col: 2, depth: 2 }, // 4: Right child of 1
-  { col: 4, depth: 2 }, // 5: Left child of 2
-  { col: 6, depth: 2 }, // 6: Right child of 2
-];
-
 const treeLayout = computed(() => {
   const step = currentStep.value;
-  if (!step || !step.nodes)
+  if (!step || !step.nodes || !step.nodes.length) {
     return { positions: {}, edges: [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
+  }
+
+  const nodesMap = {};
+  step.nodes.forEach(n => {
+    nodesMap[n.id] = { ...n };
+  });
+
+  const rootId = step.rootId;
+  if (rootId === null || rootId === undefined || !nodesMap[rootId]) {
+    return { positions: {}, edges: step.edges || [], viewBox: FIXED_VIEWBOX, nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H };
+  }
+
+  function assignDepth(id, depth) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    nodesMap[id].depth = depth;
+    assignDepth(nodesMap[id].left, depth + 1);
+    assignDepth(nodesMap[id].right, depth + 1);
+  }
+  assignDepth(rootId, 0);
+
+  const inOrderNodes = [];
+  function inOrder(id) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    inOrder(nodesMap[id].left);
+    inOrderNodes.push(id);
+    inOrder(nodesMap[id].right);
+  }
+  inOrder(rootId);
+
+  const rawX = {};
+  const SPACING = 90;
+  inOrderNodes.forEach((id, idx) => {
+    rawX[id] = idx * SPACING;
+  });
+
+  function adjustParentX(id) {
+    if (id === null || id === undefined || !nodesMap[id]) return;
+    const node = nodesMap[id];
+    adjustParentX(node.left);
+    adjustParentX(node.right);
+
+    if (node.left !== null && node.left !== undefined && nodesMap[node.left] &&
+        node.right !== null && node.right !== undefined && nodesMap[node.right]) {
+      rawX[id] = (rawX[node.left] + rawX[node.right]) / 2;
+    }
+  }
+  adjustParentX(rootId);
+
+  let minX = Infinity, maxX = -Infinity, maxDepth = 0;
+  inOrderNodes.forEach(id => {
+    if (rawX[id] < minX) minX = rawX[id];
+    if (rawX[id] > maxX) maxX = rawX[id];
+    if ((nodesMap[id].depth || 0) > maxDepth) maxDepth = nodesMap[id].depth;
+  });
+
+  const PAD_SIDE = 70;
+  const CANVAS_W = 640;
+  const contentW = (maxX - minX) + 2 * PAD_SIDE;
+  const shiftX = Math.max(0, (CANVAS_W - contentW) / 2);
+  const totalW = Math.max(CANVAS_W, contentW);
+  const totalH = Math.max(320, START_Y + maxDepth * LEVEL_H + NODE_H / 2 + 20);
 
   const positions = {};
-
-  step.nodes.forEach(n => {
-    if (n.id < GRID_SLOTS.length) {
-      const slot = GRID_SLOTS[n.id];
-      positions[n.id] = {
-        x: PAD_SIDE + slot.col * SPACING_X + SPACING_X / 2,
-        y: START_Y + slot.depth * LEVEL_H,
-      };
-    } else {
-      const col = n.id % MAX_COLS;
-      const d = Math.floor(n.id / MAX_COLS);
-      positions[n.id] = {
-        x: PAD_SIDE + col * SPACING_X + SPACING_X / 2,
-        y: START_Y + d * LEVEL_H,
-      };
-    }
+  inOrderNodes.forEach(id => {
+    const node = nodesMap[id];
+    positions[id] = {
+      x: rawX[id] - minX + PAD_SIDE + shiftX,
+      y: START_Y + (node.depth || 0) * LEVEL_H,
+    };
   });
+
+  const viewBox = '0 0 ' + totalW + ' ' + totalH;
 
   return {
     positions,
     edges: step.edges || [],
-    viewBox: FIXED_VIEWBOX,
+    viewBox,
     nodeW: NODE_W,
     nodeBoxH: NODE_BOX_H,
     nodeH: NODE_H,
-    spacingX: SPACING_X,
+    spacingX: SPACING,
     levelH: LEVEL_H,
-    treeWidth: TREE_W,
+    treeWidth: totalW
   };
 });
 
@@ -390,12 +453,11 @@ function nodeBoxClass(n) {
 /* Playback controls                                                   */
 /* ------------------------------------------------------------------ */
 function applyInput() {
-  const arr = inpElems.value
-    .trim().split(/\s+/).filter(Boolean).map(Number).filter(n => Number.isFinite(n)).slice(0, 7);
+  const tokens = parseInputTokens(inpElems.value);
   clearTimeout(playTimer);
   playing.value = false;
-  if (!arr.length) { steps.value = []; si.value = 0; return; }
-  const { nodes, edges, rootId } = buildLevelOrderTree(arr);
+  if (!tokens.length) { steps.value = []; si.value = 0; return; }
+  const { nodes, edges, rootId } = buildLevelOrderTree(tokens);
   steps.value = buildSteps(nodes, edges, rootId);
   si.value = 0;
 }

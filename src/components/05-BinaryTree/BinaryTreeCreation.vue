@@ -245,7 +245,22 @@ function frame(title, rows) { return { title, rows }; }
 /* ------------------------------------------------------------------ */
 /* Build animation steps                                               */
 /* ------------------------------------------------------------------ */
-function buildSteps(values) {
+function parseInputTokens(inputStr) {
+  const raw = inputStr.trim().split(/[\s,]+/).filter(Boolean).slice(0, 15);
+  return raw.map(tok => {
+    const lower = tok.toLowerCase();
+    if (lower === 'null' || lower === 'n' || lower === 'none' || tok === '-') {
+      return null;
+    }
+    const num = Number(tok);
+    return Number.isFinite(num) ? num : null;
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Build animation steps                                               */
+/* ------------------------------------------------------------------ */
+function buildSteps(tokens) {
   const allSteps  = [];
   const nodes     = [];    // { id, val, left, right, addr }
   const edges     = [];    // { from, to }
@@ -263,100 +278,113 @@ function buildSteps(values) {
     });
   }
 
-  values.forEach((val, vi) => {
-    const id   = nodes.length;
-    const addr = ADDR(id);
-    const varMain = [frame('main()', [['arr[' + vi + ']', '' + val]])];
+  if (!tokens.length || tokens[0] === null) return allSteps;
 
-    /* ── call insert ─────────────────────────────── */
-    snap(null, null, [], `insert(${val}) called (element ${vi + 1} of ${values.length}).`, 'c_main', varMain);
+  const rootVal = tokens[0];
+  const rootAddr = ADDR(0);
+  const varMain0 = [frame('main()', [['arr[0]', '' + rootVal]])];
 
-    /* ── create node ─────────────────────────────── */
-    nodes.push({ id, val, left: null, right: null, addr });
-    const varNew = [
-      frame('main()', [['arr[' + vi + ']', '' + val]]),
-      frame('insert(val)', [['val', '' + val], ['newNode', fmt(addr), true]]),
-    ];
-    snap(id, null, [], `Allocate newNode(@${addr}): Node(${val}).`, 'c_createNode', varNew);
-    snap(id, null, [], `newNode.data = ${val}.`, 'c_setData', varNew);
-    snap(id, null, [], 'newNode.left = null.', 'c_setLeft', varNew);
-    snap(id, null, [], 'newNode.right = null.', 'c_setRight', varNew);
+  snap(null, null, [], `insert(${rootVal}) called (element 1 of ${tokens.length}).`, 'c_main', varMain0);
+  nodes.push({ id: 0, val: rootVal, left: null, right: null, addr: rootAddr });
 
-    /* ── root check ──────────────────────────────── */
-    const rootNull = rootId === null;
-    snap(id, null, [], `Check: root == null? → ${rootNull ? 'YES — tree is empty' : 'NO — tree exists, use queue'}`, 'c_rootCheck', varNew);
+  const varNew0 = [
+    frame('main()', [['arr[0]', '' + rootVal]]),
+    frame('insert(val)', [['val', '' + rootVal], ['newNode', fmt(rootAddr), true]]),
+  ];
+  snap(0, null, [], `Allocate newNode(@${rootAddr}): Node(${rootVal}).`, 'c_createNode', varNew0);
+  snap(0, null, [], `newNode.data = ${rootVal}.`, 'c_setData', varNew0);
+  snap(0, null, [], 'newNode.left = null.', 'c_setLeft', varNew0);
+  snap(0, null, [], 'newNode.right = null.', 'c_setRight', varNew0);
+  snap(0, null, [], `Check: root == null? → YES — tree is empty`, 'c_rootCheck', varNew0);
 
-    if (rootNull) {
-      rootId = id;
-      const varRoot = [
-        frame('main()', [['arr[' + vi + ']', '' + val]]),
-        frame('insert(val)', [['val', '' + val], ['newNode', fmt(addr), true], ['root', fmt(addr), true]]),
-      ];
-      snap(id, null, [], `root = newNode (@${addr}). First node inserted as root!`, 'c_rootAssign', varRoot);
-      snap(null, null, [], 'return — root node inserted.', 'c_rootReturn', varRoot);
-      return;
-    }
+  rootId = 0;
+  const varRoot0 = [
+    frame('main()', [['arr[0]', '' + rootVal]]),
+    frame('insert(val)', [['val', '' + rootVal], ['newNode', fmt(rootAddr), true], ['root', fmt(rootAddr), true]]),
+  ];
+  snap(0, null, [], `root = newNode (@${rootAddr}). First node inserted as root!`, 'c_rootAssign', varRoot0);
+  snap(null, null, [], 'return — root node inserted.', 'c_rootReturn', varRoot0);
 
-    /* ── init queue ──────────────────────────────── */
-    const queue = [rootId];
-    const varQ = (q, curr) => [
-      frame('main()', [['arr[' + vi + ']', '' + val]]),
-      frame('insert(val)', [
-        ['val', '' + val],
-        ['newNode', fmt(addr), true],
-        ...(curr !== null ? [['curr', fmt(ADDR(curr)), true]] : []),
-        ['q.size', '' + q.length],
-      ]),
-    ];
-    snap(id, null, [...queue], `Init queue, enqueue root (@${ADDR(rootId)}, val=${nodes[rootId].val}).`, 'c_initQueue', varQ(queue, null));
+  const levelQ = [nodes[0]];
+  let vIdx = 1;
 
-    let inserted = false;
-    while (!inserted) {
-      /* ── while check ───────────────────── */
-      snap(id, null, [...queue], `while queue not empty → ${queue.length} node(s) in queue. Continue.`, 'c_whileLoop', varQ(queue, null));
+  while (levelQ.length > 0 && vIdx < tokens.length) {
+    const parent = levelQ.shift();
 
-      /* ── dequeue ────────────────────────── */
-      const currId = queue.shift();
-      const curr   = nodes[currId];
-      snap(id, currId, [...queue], `Dequeue: curr = @${curr.addr} (val=${curr.val}). Queue now has ${queue.length} node(s).`, 'c_dequeue', varQ(queue, currId));
+    // Process Left Child Slot
+    if (vIdx < tokens.length) {
+      const leftVal = tokens[vIdx];
+      const ti = vIdx;
+      vIdx++;
 
-      /* ── left check ─────────────────────── */
-      const leftNull = curr.left === null;
-      snap(id, currId, [...queue], `Check: curr.left == null? → ${leftNull ? 'YES — insert newNode here' : 'NO — enqueue curr.left'}`, 'c_leftCheck', varQ(queue, currId));
-
-      if (leftNull) {
-        curr.left = id;
-        edges.push({ from: currId, to: id });
-        snap(id, currId, [...queue], `curr.left = newNode → ${val} attached as left child of ${curr.val}.`, 'c_attachLeft', varQ(queue, currId));
-        snap(null, null, [], `return — ${val} inserted as left child of ${curr.val}.`, 'c_retLeft', varQ([], null));
-        inserted = true;
-        break;
+      if (leftVal === null) {
+        snap(null, parent.id, [parent.id], `Check left child slot of @${parent.addr}: null token → skip left child.`, 'c_leftCheck', [frame('main()', [['arr[' + ti + ']', 'null']])]);
       } else {
-        queue.push(curr.left);
-        snap(id, currId, [...queue], `curr.left is @${ADDR(curr.left)} (val=${nodes[curr.left].val}), not null → enqueue it.`, 'c_enqueueLeft', varQ(queue, currId));
-      }
+        const id   = nodes.length;
+        const addr = ADDR(id);
+        const varMain = [frame('main()', [['arr[' + ti + ']', '' + leftVal]])];
 
-      /* ── right check ────────────────────── */
-      const rightNull = curr.right === null;
-      snap(id, currId, [...queue], `Check: curr.right == null? → ${rightNull ? 'YES — insert newNode here' : 'NO — enqueue curr.right'}`, 'c_rightCheck', varQ(queue, currId));
+        snap(null, null, [], `insert(${leftVal}) called (element ${ti + 1} of ${tokens.length}).`, 'c_main', varMain);
+        nodes.push({ id, val: leftVal, left: null, right: null, addr });
 
-      if (rightNull) {
-        curr.right = id;
-        edges.push({ from: currId, to: id });
-        snap(id, currId, [...queue], `curr.right = newNode → ${val} attached as right child of ${curr.val}.`, 'c_attachRight', varQ(queue, currId));
-        snap(null, null, [], `return — ${val} inserted as right child of ${curr.val}.`, 'c_retRight', varQ([], null));
-        inserted = true;
-        break;
-      } else {
-        queue.push(curr.right);
-        snap(id, currId, [...queue], `curr.right is @${ADDR(curr.right)} (val=${nodes[curr.right].val}), not null → enqueue it.`, 'c_enqueueRight', varQ(queue, currId));
+        const varNew = [
+          frame('main()', [['arr[' + ti + ']', '' + leftVal]]),
+          frame('insert(val)', [['val', '' + leftVal], ['newNode', fmt(addr), true], ['curr', fmt(parent.addr), true]]),
+        ];
+        snap(id, parent.id, [], `Allocate newNode(@${addr}): Node(${leftVal}).`, 'c_createNode', varNew);
+        snap(id, parent.id, [], `newNode.data = ${leftVal}.`, 'c_setData', varNew);
+        snap(id, parent.id, [], 'newNode.left = null.', 'c_setLeft', varNew);
+        snap(id, parent.id, [], 'newNode.right = null.', 'c_setRight', varNew);
+        snap(id, parent.id, [], `Check: curr.left == null? → YES — attach newNode as left child`, 'c_leftCheck', varNew);
+
+        parent.left = id;
+        edges.push({ from: parent.id, to: id });
+        snap(id, parent.id, [], `curr.left = newNode → ${leftVal} attached as left child of @${parent.addr} (val=${parent.val}).`, 'c_attachLeft', varNew);
+        snap(null, null, [], `return — ${leftVal} inserted as left child of ${parent.val}.`, 'c_retLeft', varNew);
+
+        levelQ.push(nodes[id]);
       }
     }
-  });
 
+    // Process Right Child Slot
+    if (vIdx < tokens.length) {
+      const rightVal = tokens[vIdx];
+      const ti = vIdx;
+      vIdx++;
+
+      if (rightVal === null) {
+        snap(null, parent.id, [parent.id], `Check right child slot of @${parent.addr}: null token → skip right child.`, 'c_rightCheck', [frame('main()', [['arr[' + ti + ']', 'null']])]);
+      } else {
+        const id   = nodes.length;
+        const addr = ADDR(id);
+        const varMain = [frame('main()', [['arr[' + ti + ']', '' + rightVal]])];
+
+        snap(null, null, [], `insert(${rightVal}) called (element ${ti + 1} of ${tokens.length}).`, 'c_main', varMain);
+        nodes.push({ id, val: rightVal, left: null, right: null, addr });
+
+        const varNew = [
+          frame('main()', [['arr[' + ti + ']', '' + rightVal]]),
+          frame('insert(val)', [['val', '' + rightVal], ['newNode', fmt(addr), true], ['curr', fmt(parent.addr), true]]),
+        ];
+        snap(id, parent.id, [], `Allocate newNode(@${addr}): Node(${rightVal}).`, 'c_createNode', varNew);
+        snap(id, parent.id, [], `newNode.data = ${rightVal}.`, 'c_setData', varNew);
+        snap(id, parent.id, [], 'newNode.left = null.', 'c_setLeft', varNew);
+        snap(id, parent.id, [], 'newNode.right = null.', 'c_setRight', varNew);
+        snap(id, parent.id, [], `Check: curr.right == null? → YES — attach newNode as right child`, 'c_rightCheck', varNew);
+
+        parent.right = id;
+        edges.push({ from: parent.id, to: id });
+        snap(id, parent.id, [], `curr.right = newNode → ${rightVal} attached as right child of @${parent.addr} (val=${parent.val}).`, 'c_attachRight', varNew);
+        snap(null, null, [], `return — ${rightVal} inserted as right child of ${parent.val}.`, 'c_retRight', varNew);
+
+        levelQ.push(nodes[id]);
+      }
+    }
+  }
+
+  snap(null, null, [], 'Binary Tree creation complete.', 'c_main', []);
   return allSteps;
 }
-
 /* ------------------------------------------------------------------ */
 /* Reactive state                                                      */
 /* ------------------------------------------------------------------ */
@@ -420,7 +448,7 @@ const MAX_COLS   = 7;
 const MAX_DEPTH  = 2;
 const SPACING_X  = 70;
 const LEVEL_H    = 80;
-const PAD_TOP    = 0;
+const PAD_TOP    = 35;
 const PAD_BOTTOM = 0;
 const PAD_SIDE   = 50;
 
@@ -433,53 +461,88 @@ const FIXED_TOTAL_W = STAGING_X + NODE_W / 2 + PAD_SIDE;  // 746
 const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM; // 216
 const FIXED_VIEWBOX = `0 0 ${FIXED_TOTAL_W} ${FIXED_TOTAL_H}`;
 
-// Position lookup for 7-node complete binary tree slots (level order 0..6)
-const GRID_SLOTS = [
-  { col: 3, depth: 0 }, // 0: Root
-  { col: 1, depth: 1 }, // 1: Left child of root
-  { col: 5, depth: 1 }, // 2: Right child of root
-  { col: 0, depth: 2 }, // 3: Left child of 1
-  { col: 2, depth: 2 }, // 4: Right child of 1
-  { col: 4, depth: 2 }, // 5: Left child of 2
-  { col: 6, depth: 2 }, // 6: Right child of 2
-];
-
 const treeLayout = computed(() => {
   const step = currentStep.value;
-  if (!step || !step.nodes)
+  if (!step || !step.nodes || !step.nodes.length) {
     return { positions: {}, edges: [], viewBox: FIXED_VIEWBOX,
              nodeW: NODE_W, nodeBoxH: NODE_BOX_H, nodeH: NODE_H, staging: null };
+  }
+
+  const nodesMap = {};
+  step.nodes.forEach(n => {
+    nodesMap[n.id] = { ...n };
+  });
+
+  const rootId = step.rootId;
+  const isUnplaced = (n) => (step.newNodeId === n.id && step.rootId !== n.id &&
+    !step.edges.some(e => e.to === n.id));
+
+  const unplacedNodes = step.nodes.filter(n => isUnplaced(n));
 
   const positions = {};
 
-  step.nodes.forEach(n => {
-    // Check if this node is unplaced (e.g. newly created in staging before attachment)
-    const isUnplaced = (step.newNodeId === n.id && step.rootId !== n.id &&
-      !step.edges.some(e => e.to === n.id));
-
-    if (isUnplaced) {
-      // Staging position
-      positions[n.id] = { x: STAGING_X, y: START_Y };
-    } else if (n.id < GRID_SLOTS.length) {
-      // Complete binary tree slot
-      const slot = GRID_SLOTS[n.id];
-      positions[n.id] = {
-        x: PAD_SIDE + slot.col * SPACING_X + SPACING_X / 2,
-        y: START_Y + slot.depth * LEVEL_H,
-      };
-    } else {
-      // Fallback for overflow nodes
-      const col = n.id % MAX_COLS;
-      const d = Math.floor(n.id / MAX_COLS);
-      positions[n.id] = {
-        x: PAD_SIDE + col * SPACING_X + SPACING_X / 2,
-        y: START_Y + d * LEVEL_H,
-      };
+  if (rootId !== null && rootId !== undefined && nodesMap[rootId]) {
+    function assignDepth(id, depth) {
+      if (id === null || id === undefined || !nodesMap[id]) return;
+      nodesMap[id].depth = depth;
+      assignDepth(nodesMap[id].left, depth + 1);
+      assignDepth(nodesMap[id].right, depth + 1);
     }
+    assignDepth(rootId, 0);
+
+    const inOrderNodes = [];
+    function inOrder(id) {
+      if (id === null || id === undefined || !nodesMap[id]) return;
+      inOrder(nodesMap[id].left);
+      inOrderNodes.push(id);
+      inOrder(nodesMap[id].right);
+    }
+    inOrder(rootId);
+
+    const rawX = {};
+    const SPACING = 90;
+    inOrderNodes.forEach((id, idx) => {
+      rawX[id] = idx * SPACING;
+    });
+
+    function adjustParentX(id) {
+      if (id === null || id === undefined || !nodesMap[id]) return;
+      const node = nodesMap[id];
+      adjustParentX(node.left);
+      adjustParentX(node.right);
+
+      if (node.left !== null && node.left !== undefined && nodesMap[node.left] &&
+          node.right !== null && node.right !== undefined && nodesMap[node.right]) {
+        rawX[id] = (rawX[node.left] + rawX[node.right]) / 2;
+      }
+    }
+    adjustParentX(rootId);
+
+    let minX = Infinity, maxX = -Infinity, maxDepth = 0;
+    inOrderNodes.forEach(id => {
+      if (rawX[id] < minX) minX = rawX[id];
+      if (rawX[id] > maxX) maxX = rawX[id];
+      if ((nodesMap[id].depth || 0) > maxDepth) maxDepth = nodesMap[id].depth;
+    });
+
+    const PAD_SIDE = 50;
+    const contentW = (maxX - minX) + 2 * PAD_SIDE;
+    const shiftX = Math.max(0, (540 - contentW) / 2);
+
+    inOrderNodes.forEach(id => {
+      const node = nodesMap[id];
+      positions[id] = {
+        x: rawX[id] - minX + PAD_SIDE + shiftX,
+        y: START_Y + (node.depth || 0) * LEVEL_H,
+      };
+    });
+  }
+
+  unplacedNodes.forEach(n => {
+    positions[n.id] = { x: STAGING_X, y: START_Y };
   });
 
-  const unplaced = step.nodes.filter(n => positions[n.id] && positions[n.id].x === STAGING_X);
-  const staging  = unplaced.length ? { id: unplaced[0].id, x: STAGING_X, y: START_Y } : null;
+  const staging = unplacedNodes.length ? { id: unplacedNodes[0].id, x: STAGING_X, y: START_Y } : null;
 
   return {
     positions,
@@ -567,11 +630,10 @@ function nodeBoxClass(n) {
 /* Playback controls                                                   */
 /* ------------------------------------------------------------------ */
 function applyInput() {
-  const arr = inpElems.value
-    .trim().split(/\s+/).filter(Boolean).map(Number).filter(n => Number.isFinite(n));
+  const tokens = parseInputTokens(inpElems.value);
   clearTimeout(playTimer);
   playing.value = false;
-  steps.value   = arr.length ? buildSteps(arr) : [];
+  steps.value   = tokens.length ? buildSteps(tokens) : [];
   si.value      = 0;
 }
 
@@ -717,7 +779,7 @@ onBeforeUnmount(() => {
                         :x1="treeLayout.staging.x - 55" :y1="4"
                         :x2="treeLayout.staging.x - 55" :y2="FIXED_TOTAL_H - 4"
                         class="bt-staging-divider" />
-                      <text :x="treeLayout.staging.x - 30" y="18" class="bt-staging-label">staging</text>
+                      <text :x="treeLayout.staging.x - 30" y="18" class="bt-staging-label"></text>
                     </g>
 
                     <!-- Edges -->

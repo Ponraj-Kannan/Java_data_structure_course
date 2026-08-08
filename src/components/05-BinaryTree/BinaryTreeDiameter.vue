@@ -2,8 +2,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 
 const props = defineProps({
-  topic:    { type: String, default: 'Binary Tree — Preorder Traversal' },
-  subTopic: { type: String, default: 'Root → Left → Right Recursive Traversal' },
+  topic:    { type: String, default: 'Binary Tree — Diameter of the Tree' },
+  subTopic: { type: String, default: 'Recursive Traversal Approach (leftHeight + rightHeight)' },
 });
 
 const ADDR = (i) => (i + 1) * 1000;
@@ -18,89 +18,104 @@ const fmt  = (a) => {
 /* ------------------------------------------------------------------ */
 const CODES = {
   java: [
-    ['', 'class BinaryTree {'],
-    ['', '    Node root;'],
-    ['', ''],
-    ['c_call',       '    void preorder(Node node) {'],
-    ['c_nullCheck',  '        if (node == null) {'],
-    ['c_nullReturn', '            return;'],
-    ['',             '        }'],
-    ['c_visit',      '        System.out.print(node.data + " ");'],
-    ['c_recurLeft',  '        preorder(node.left);'],
-    ['c_recurRight', '        preorder(node.right);'],
-    ['c_return',     '    }'],
-    ['', ''],
-    ['c_main',       '    public static void main(String[] args) {'],
-    ['c_main',       '        BinaryTree tree = new BinaryTree();'],
-    ['c_main',       '        // ... build tree level order ...'],
-    ['c_main',       '        tree.preorder(tree.root);'],
-    ['c_main',       '    }'],
-    ['', '}'],
+    ['',              'class BinaryTree {'],
+    ['',              '    Node root;'],
+    ['',              '    int maxDiameter = 0;'],
+    ['',              ''],
+    ['c_call',        '    int calcHeight(Node node) {'],
+    ['c_nullCheck',   '        if (node == null) {'],
+    ['c_nullReturn',  '            return 0;'],
+    ['',              '        }'],
+    ['c_recurLeft',   '        int leftHeight  = calcHeight(node.left);'],
+    ['c_recurRight',  '        int rightHeight = calcHeight(node.right);'],
+    ['c_updateDiam',  '        maxDiameter = Math.max(maxDiameter, leftHeight + rightHeight);'],
+    ['c_return',      '        return Math.max(leftHeight, rightHeight) + 1;'],
+    ['',              '    }'],
+    ['',              ''],
+    ['c_main',        '    public static void main(String[] args) {'],
+    ['c_main',        '        BinaryTree tree = new BinaryTree();'],
+    ['c_main',        '        // ... build tree level order ...'],
+    ['c_main',        '        int d = tree.getDiameter(tree.root);'],
+    ['c_main',        '        System.out.println("Diameter: " + d);'],
+    ['c_main',        '    }'],
+    ['',              '}'],
   ],
   c: [
-    ['c_call',       'void preorder(struct Node* node) {'],
-    ['c_nullCheck',  '    if (node == NULL) {'],
-    ['c_nullReturn', '        return;'],
-    ['',             '    }'],
-    ['c_visit',      '    printf("%d ", node->data);'],
-    ['c_recurLeft',  '    preorder(node->left);'],
-    ['c_recurRight', '    preorder(node->right);'],
-    ['c_return',     '}'],
-    ['', ''],
-    ['c_main',       'int main() {'],
-    ['c_main',       '    // ... build tree level order ...'],
-    ['c_main',       '    preorder(root);'],
-    ['c_main',       '    return 0;'],
-    ['', '}'],
+    ['c_call',        'int calcHeight(struct Node* node, int* maxDiameter) {'],
+    ['c_nullCheck',   '    if (node == NULL) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftHeight  = calcHeight(node->left, maxDiameter);'],
+    ['c_recurRight',  '    int rightHeight = calcHeight(node->right, maxDiameter);'],
+    ['c_updateDiam',  '    if (leftHeight + rightHeight > *maxDiameter) *maxDiameter = leftHeight + rightHeight;'],
+    ['c_return',      '    return (leftHeight > rightHeight ? leftHeight : rightHeight) + 1;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int maxDiameter = 0;'],
+    ['c_main',        '    calcHeight(root, &maxDiameter);'],
+    ['c_main',        '    printf("Diameter: %d\\n", maxDiameter);'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
   ],
   cpp: [
-    ['c_call',       'void preorder(Node* node) {'],
-    ['c_nullCheck',  '    if (node == nullptr) {'],
-    ['c_nullReturn', '        return;'],
-    ['',             '    }'],
-    ['c_visit',      '    cout << node->data << " ";'],
-    ['c_recurLeft',  '    preorder(node->left);'],
-    ['c_recurRight', '    preorder(node->right);'],
-    ['c_return',     '}'],
-    ['', ''],
-    ['c_main',       'int main() {'],
-    ['c_main',       '    // ... build tree level order ...'],
-    ['c_main',       '    preorder(root);'],
-    ['c_main',       '    return 0;'],
-    ['', '}'],
+    ['c_call',        'int calcHeight(Node* node, int& maxDiameter) {'],
+    ['c_nullCheck',   '    if (node == nullptr) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftHeight  = calcHeight(node->left, maxDiameter);'],
+    ['c_recurRight',  '    int rightHeight = calcHeight(node->right, maxDiameter);'],
+    ['c_updateDiam',  '    maxDiameter = max(maxDiameter, leftHeight + rightHeight);'],
+    ['c_return',      '    return max(leftHeight, rightHeight) + 1;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int maxDiameter = 0;'],
+    ['c_main',        '    calcHeight(root, maxDiameter);'],
+    ['c_main',        '    cout << "Diameter: " << maxDiameter << endl;'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
   ],
   python: [
-    ['c_call',       'def preorder(node):'],
-    ['c_nullCheck',  '    if node is None:'],
-    ['c_nullReturn', '        return'],
-    ['c_visit',      '    print(node.data, end=" ")'],
-    ['c_recurLeft',  '    preorder(node.left)'],
-    ['c_recurRight', '    preorder(node.right)'],
-    ['c_return',     '    # return'],
-    ['', ''],
-    ['c_main',       '# build tree level order ...'],
-    ['c_main',       'preorder(root)'],
+    ['c_call',        'def calc_height(node):'],
+    ['',              '    nonlocal max_diameter'],
+    ['c_nullCheck',   '    if node is None:'],
+    ['c_nullReturn',  '        return 0'],
+    ['c_recurLeft',   '    left_height  = calc_height(node.left)'],
+    ['c_recurRight',  '    right_height = calc_height(node.right)'],
+    ['c_updateDiam',  '    max_diameter = max(max_diameter, left_height + right_height)'],
+    ['c_return',      '    return max(left_height, right_height) + 1'],
+    ['',              ''],
+    ['c_main',        '# build tree level order ...'],
+    ['c_main',        'max_diameter = 0'],
+    ['c_main',        'calc_height(root)'],
+    ['c_main',        'print("Diameter:", max_diameter)'],
   ],
 };
 
-/* ------------------------------------------------------------------ */
-/* Pseudocode                                                          */
-/* ------------------------------------------------------------------ */
 const PSEUDOCODE = [
-  'procedure preorder(node):',
-  '    if node is null:',
-  '        return',
+  'procedure getDiameter(root):',
+  '    maxDiameter = 0',
+  '    calcHeight(root)',
+  '    return maxDiameter',
   '',
-  '    visit(node.data)        // 1. Root',
-  '    preorder(node.left)     // 2. Left Subtree',
-  '    preorder(node.right)    // 3. Right Subtree',
+  'function calcHeight(node):',
+  '    if node is null:',
+  '        return 0',
+  '',
+  '    leftHeight  = calcHeight(node.left)',
+  '    rightHeight = calcHeight(node.right)',
+  '',
+  '    // Update global maximum diameter (longest path through node)',
+  '    maxDiameter = max(maxDiameter, leftHeight + rightHeight)',
+  '',
+  '    return max(leftHeight, rightHeight) + 1',
 ];
 
 function frame(title, rows) { return { title, rows }; }
 
-/* ------------------------------------------------------------------ */
-/* Level order tree builder (instant — silent)                         */
-/* ------------------------------------------------------------------ */
 function parseInputTokens(inputStr) {
   const raw = inputStr.trim().split(/[\s,]+/).filter(Boolean).slice(0, 15);
   return raw.map(tok => {
@@ -156,92 +171,135 @@ function buildLevelOrderTree(values) {
   return { nodes, edges, rootId };
 }
 
-/* ------------------------------------------------------------------ */
-/* Step generation                                                     */
-/* ------------------------------------------------------------------ */
 function buildSteps(nodes, edges, rootId) {
-  const steps       = [];
-  const nodesMap    = {};
+  const steps    = [];
+  const nodesMap = {};
   nodes.forEach(n => (nodesMap[n.id] = n));
-
-  const visitedList = [];
   const stackFrames = [];
+  let maxDiameter = 0;
+  let isDone = false;
 
-  function childAddrHelper(childId) {
+  function childAddrStr(childId) {
     if (childId === null || childId === undefined) return 'null';
     return nodesMap[childId] ? fmt(nodesMap[childId].addr) : 'null';
   }
 
-  function snap(currId, badge, code) {
+  function snap(currId, badge, code, computedMap) {
     steps.push({
-      nodes:        nodes.map(n => ({ ...n })),
-      edges:        edges.map(e => ({ ...e })),
+      nodes:       nodes.map(n => ({ ...n })),
+      edges:       edges.map(e => ({ ...e })),
       rootId,
-      currId:       currId ?? null,
-      visitedList:  [...visitedList],
+      currId:      currId ?? null,
       badge,
       code,
-      vars:         stackFrames.map(f => frame(f.title, f.rows)),
+      maxDiameter,
+      isDone,
+      vars:        stackFrames.map(f => frame(f.title, f.rows)),
+      nodeHeights: computedMap ? { ...computedMap } : {},
     });
   }
 
   if (rootId === null) {
-    snap(null, 'Tree is empty — preorder traversal cannot run.', 'c_main');
+    maxDiameter = 0;
+    isDone = true;
+    snap(null, 'Tree is empty — diameter is 0.', 'c_main', {});
     return steps;
   }
 
-  snap(null, 'main(): Start Preorder Traversal by calling preorder(root).', 'c_main');
+  const nodeHeights = {};
+  snap(null, 'main(): Start calculating tree diameter by calling calcHeight(root).', 'c_main', nodeHeights);
 
-  function traverse(nodeId) {
+  function calcHeight(nodeId) {
     const isNull = nodeId === null || nodeId === undefined;
     const node   = isNull ? null : nodesMap[nodeId];
+    const nodeStr = isNull ? 'null' : fmt(ADDR(nodeId));
 
-    const frameTitle = `preorder(node = ${isNull ? 'null' : fmt(ADDR(nodeId))})`;
-    const frameRows  = [
-      ['node', isNull ? 'null' : fmt(ADDR(nodeId)), true],
-      ...(isNull ? [] : [['node.data', '' + node.val]]),
-    ];
+    stackFrames.push({
+      title: 'calcHeight(node = ' + nodeStr + ')',
+      rows:  [
+        ['node', nodeStr, true],
+        ...(isNull ? [] : [['node.data', '' + node.val]]),
+        ['maxDiameter', '' + maxDiameter]
+      ],
+    });
 
-    stackFrames.push({ title: frameTitle, rows: frameRows });
-
-    // Step 1: Function Entry
-    snap(nodeId, `Call ${frameTitle}`, 'c_call');
-
-    // Step 2: Base Check
-    snap(nodeId, `Check: node == null? → ${isNull ? 'TRUE (Base case)' : 'FALSE'}`, 'c_nullCheck');
+    snap(nodeId, 'Call calcHeight(node = ' + nodeStr + ')', 'c_call', nodeHeights);
+    snap(nodeId, 'Check: node == null? -> ' + (isNull ? 'TRUE (Base case: return 0)' : 'FALSE'), 'c_nullCheck', nodeHeights);
 
     if (isNull) {
-      snap(null, `node is null → Base case reached. Return to caller.`, 'c_nullReturn');
+      snap(null, 'node is null -> Base case reached. return 0.', 'c_nullReturn', nodeHeights);
       stackFrames.pop();
-      return;
+      return 0;
     }
 
-    // Step 3: Visit (Print Root Data)
-    visitedList.push(node.val);
-    snap(nodeId, `Visit node @${node.addr} → Process root data: ${node.val}. Output: [${visitedList.join(', ')}]`, 'c_visit');
+    snap(nodeId, 'Recurse LEFT: call calcHeight(node.left = ' + childAddrStr(node.left) + ')', 'c_recurLeft', nodeHeights);
+    const leftHeight = calcHeight(node.left);
 
-    // Step 4: Recurse Left Subtree
-    snap(nodeId, `Recurse LEFT: call preorder(node.left = ${childAddrHelper(node.left)})`, 'c_recurLeft');
-    traverse(node.left);
+    const topFrame = stackFrames[stackFrames.length - 1];
+    topFrame.rows = [
+      ['node', fmt(ADDR(nodeId)), true],
+      ['node.data', '' + node.val],
+      ['leftHeight', '' + leftHeight],
+      ['maxDiameter', '' + maxDiameter]
+    ];
 
-    // Step 5: Recurse Right Subtree
-    snap(nodeId, `Left subtree done for node ${node.val} (@${node.addr}). Recurse RIGHT: call preorder(node.right = ${childAddrHelper(node.right)})`, 'c_recurRight');
-    traverse(node.right);
+    snap(nodeId,
+      'Left subtree height of node ' + node.val + ' is ' + leftHeight + '. Recurse RIGHT: call calcHeight(node.right = ' + childAddrStr(node.right) + ')',
+      'c_recurRight', nodeHeights);
+    const rightHeight = calcHeight(node.right);
 
-    // Step 6: Function Return
-    snap(nodeId, `Completed preorder for node ${node.val} (@${node.addr}). Pop stack frame & return.`, 'c_return');
+    topFrame.rows = [
+      ['node', fmt(ADDR(nodeId)), true],
+      ['node.data', '' + node.val],
+      ['leftHeight', '' + leftHeight],
+      ['rightHeight', '' + rightHeight],
+      ['maxDiameter', '' + maxDiameter]
+    ];
+
+    const currentPath = leftHeight + rightHeight;
+    const updated = currentPath > maxDiameter;
+    if (updated) {
+      maxDiameter = currentPath;
+    }
+
+    topFrame.rows = [
+      ['node', fmt(ADDR(nodeId)), true],
+      ['node.data', '' + node.val],
+      ['leftHeight', '' + leftHeight],
+      ['rightHeight', '' + rightHeight],
+      ['maxDiameter', '' + maxDiameter]
+    ];
+
+    const badgeUpdateMsg = updated
+      ? `Path through node ${node.val} (@${node.addr}): leftHeight (${leftHeight}) + rightHeight (${rightHeight}) = ${currentPath} > previous max → update maxDiameter = ${maxDiameter}.`
+      : `Path through node ${node.val} (@${node.addr}): leftHeight (${leftHeight}) + rightHeight (${rightHeight}) = ${currentPath} ≤ maxDiameter (${maxDiameter}) → maxDiameter remains ${maxDiameter}.`;
+
+    snap(nodeId, badgeUpdateMsg, 'c_updateDiam', nodeHeights);
+
+    const h = Math.max(leftHeight, rightHeight) + 1;
+    nodeHeights[nodeId] = h;
+
+    topFrame.rows = [
+      ['node', fmt(ADDR(nodeId)), true],
+      ['node.data', '' + node.val],
+      ['leftHeight', '' + leftHeight],
+      ['rightHeight', '' + rightHeight],
+      ['height', '' + h],
+      ['maxDiameter', '' + maxDiameter]
+    ];
+
+    snap(nodeId, 'return 1 + max(' + leftHeight + ', ' + rightHeight + ') = ' + h + ' to parent call.', 'c_return', nodeHeights);
+
     stackFrames.pop();
+    return h;
   }
 
-  traverse(rootId);
-  snap(null, `Preorder Traversal Complete! Final Output: [${visitedList.join(', ')}]`, 'c_main');
-
+  calcHeight(rootId);
+  isDone = true;
+  snap(null, 'Diameter calculation complete! Final Diameter of Binary Tree = ' + maxDiameter, 'c_main', nodeHeights);
   return steps;
 }
 
-/* ------------------------------------------------------------------ */
-/* Reactive state                                                      */
-/* ------------------------------------------------------------------ */
 const inpElems  = ref('1 2 3 4 5 6 7');
 const lang      = ref('java');
 const rightTab  = ref('code');
@@ -249,67 +307,44 @@ const speed     = ref(900);
 const si        = ref(0);
 const playing   = ref(false);
 const steps     = ref([]);
-
 const vizHeight   = ref(320);
 const tableHeight = ref(90);
 const leftWidth   = ref(58);
-
 const mainRef         = ref(null);
 const leftColRef      = ref(null);
 const hResizerRef     = ref(null);
 const vizResizerRef   = ref(null);
 const tableResizerRef = ref(null);
-
 let playTimer = null;
 
 const currentStep = computed(() => steps.value[si.value] || {
-  nodes: [], edges: [], vars: [], badge: '', rootId: null, currId: null, visitedList: [],
+  nodes: [], edges: [], vars: [], badge: '', rootId: null, currId: null, nodeHeights: {}, maxDiameter: 0, isDone: false,
 });
 const s         = computed(() => currentStep.value);
 const codeLines = computed(() => CODES[lang.value] || []);
-
 const nodesById = computed(() => {
   const m = {};
   (currentStep.value.nodes || []).forEach(n => (m[n.id] = n));
   return m;
 });
-
 function childAddr(childId) {
   if (childId === null || childId === undefined) return null;
   return nodesById.value[childId] ? nodesById.value[childId].addr : null;
 }
 
-/* ------------------------------------------------------------------ */
-/* Viz container size (observed via ResizeObserver)                    */
-/* ------------------------------------------------------------------ */
 const vizContainerW = ref(640);
 const vizContainerH = ref(320);
 const vizSvgRef     = ref(null);
 let   vizRO         = null;
 
-/* ------------------------------------------------------------------ */
-/* Tree layout — fixed node size & fixed canvas viewBox (max 7 nodes)   */
-/* ------------------------------------------------------------------ */
-
-// Fixed node dimensions — constant at all times (matches BinaryTreeCreation.vue)
-const NODE_W     = 132;
-const NODE_BOX_H = 44;
-const NODE_H     = 68;   // box height + address label space
-
-// Fixed grid parameters designed specifically for max 7 nodes
-const MAX_COLS   = 7;
-const MAX_DEPTH  = 2;
-const SPACING_X  = 70;
-const LEVEL_H    = 80;
+const NODE_W = 132, NODE_BOX_H = 44, NODE_H = 68;
+const MAX_COLS = 7, MAX_DEPTH = 2, SPACING_X = 70, LEVEL_H = 80;
 const PAD_TOP = 35, PAD_BOTTOM = 0, PAD_SIDE = 50;
-
-const START_Y    = PAD_TOP + NODE_BOX_H / 2; // 22
-
-// Fixed ViewBox dimensions — invariant across all animation steps
-const TREE_W        = PAD_SIDE + MAX_COLS * SPACING_X; // 540
-const FIXED_TOTAL_W = TREE_W + PAD_SIDE;                // 590
-const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM; // 176
-const FIXED_VIEWBOX = `0 0 ${FIXED_TOTAL_W} ${FIXED_TOTAL_H}`;
+const START_Y = PAD_TOP + NODE_BOX_H / 2;
+const TREE_W = PAD_SIDE + MAX_COLS * SPACING_X;
+const FIXED_TOTAL_W = TREE_W + PAD_SIDE;
+const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM;
+const FIXED_VIEWBOX = '0 0 ' + FIXED_TOTAL_W + ' ' + FIXED_TOTAL_H;
 
 const treeLayout = computed(() => {
   const step = currentStep.value;
@@ -401,57 +436,40 @@ const treeLayout = computed(() => {
   };
 });
 
-function pos(id) {
-  return treeLayout.value.positions[id] || { x: 0, y: 0 };
-}
-
+function pos(id) { return treeLayout.value.positions[id] || { x: 0, y: 0 }; }
 function edgeCoords(e) {
-  const pFrom    = pos(e.from);
-  const pTo      = pos(e.to);
+  const pFrom = pos(e.from), pTo = pos(e.to);
   const fromNode = nodesById.value[e.from];
-  const isLeft   = fromNode && fromNode.left === e.to;
-  const hw       = (treeLayout.value.nodeW || 132) / 2 * 0.6;
-  const nbh      = (treeLayout.value.nodeBoxH || 44);
-  return {
-    x1: isLeft ? pFrom.x - hw : pFrom.x + hw,
-    y1: pFrom.y,
-    x2: pTo.x,
-    y2: pTo.y - nbh / 2,
-  };
+  const isLeft = fromNode && fromNode.left === e.to;
+  const hw = (treeLayout.value.nodeW || 132) / 2 * 0.6;
+  const nbh = treeLayout.value.nodeBoxH || 44;
+  return { x1: isLeft ? pFrom.x - hw : pFrom.x + hw, y1: pFrom.y, x2: pTo.x, y2: pTo.y - nbh / 2 };
 }
-
 function getPointerBadgesForNode(id) {
   const step = currentStep.value;
   if (!step) return [];
   const ptrs = [];
   if (step.rootId === id) ptrs.push({ name: 'root', label: 'root', color: '#3b82f6' });
   if (step.currId === id) ptrs.push({ name: 'node', label: 'node', color: '#f97316' });
-
-  const count  = ptrs.length;
+  const count = ptrs.length;
   if (!count) return [];
-  const nodeX  = pos(id).x;
-  const nodeY  = pos(id).y;
-  const nbh    = treeLayout.value.nodeBoxH || 44;
+  const nodeX = pos(id).x, nodeY = pos(id).y;
+  const nbh = treeLayout.value.nodeBoxH || 44;
   const spread = Math.min(30, (treeLayout.value.nodeW || 132) * 0.22);
   return ptrs.map((p, i) => {
     let xOffset = 0;
     if (count === 2) xOffset = i === 0 ? -spread : spread;
-    else if (count === 3) xOffset = (i - 1) * spread;
     return { ...p, x: nodeX + xOffset, yText: nodeY - nbh / 2 - 22, yArrow: nodeY - nbh / 2 - 8 };
   });
 }
-
 function nodeBoxClass(n) {
   const step = currentStep.value;
   if (!step) return '';
   if (step.currId === n.id) return 'bt-box-cur';
-  if ((step.visitedList || []).includes(n.val)) return 'bt-box-visited';
+  if ((step.nodeHeights || {})[n.id] !== undefined) return 'bt-box-resolved';
   return '';
 }
 
-/* ------------------------------------------------------------------ */
-/* Playback controls                                                   */
-/* ------------------------------------------------------------------ */
 function applyInput() {
   const tokens = parseInputTokens(inpElems.value);
   clearTimeout(playTimer);
@@ -461,18 +479,15 @@ function applyInput() {
   steps.value = buildSteps(nodes, edges, rootId);
   si.value = 0;
 }
-
 function stepBy(n) {
   if (!steps.value.length) return;
   si.value = Math.min(steps.value.length - 1, Math.max(0, si.value + n));
 }
-
 function tick() {
   if (si.value >= steps.value.length - 1) { playing.value = false; clearTimeout(playTimer); return; }
   si.value++;
   playTimer = setTimeout(tick, speed.value);
 }
-
 function togglePlay() {
   if (!steps.value.length) return;
   if (playing.value) { playing.value = false; clearTimeout(playTimer); return; }
@@ -480,12 +495,8 @@ function togglePlay() {
   playing.value = true;
   tick();
 }
-
 watch(speed, nv => { if (playing.value) { clearTimeout(playTimer); playTimer = setTimeout(tick, nv); } });
 
-/* ------------------------------------------------------------------ */
-/* Resizers                                                            */
-/* ------------------------------------------------------------------ */
 function initHResizer() {
   const rsz = hResizerRef.value;
   if (!rsz) return;
@@ -493,12 +504,9 @@ function initHResizer() {
   const onDown = e => { dragging = true; startX = e.clientX; startW = leftWidth.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
   const onMove = e => { if (!dragging) return; const cW = rsz.parentElement.getBoundingClientRect().width; leftWidth.value = Math.max(20, Math.min(80, startW + ((e.clientX - startX) / cW) * 100)); };
   const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
-  rsz.addEventListener('mousedown', onDown);
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', onUp);
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
 }
-
 function initVResizer(refElem, valueRef, minH, maxH) {
   const rsz = refElem.value;
   if (!rsz) return;
@@ -506,43 +514,31 @@ function initVResizer(refElem, valueRef, minH, maxH) {
   const onDown = e => { dragging = true; startY = e.clientY; startH = valueRef.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
   const onMove = e => { if (!dragging) return; valueRef.value = Math.max(minH, Math.min(maxH, startH + (e.clientY - startY))); };
   const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
-  rsz.addEventListener('mousedown', onDown);
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', onUp);
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
 }
-
 let cleanupFns = [];
-
 function onKeydown(e) {
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
   if (e.key === 'ArrowRight') stepBy(1);
   else if (e.key === 'ArrowLeft') stepBy(-1);
   else if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
 }
-
 onMounted(() => {
   document.addEventListener('keydown', onKeydown);
   cleanupFns.push(initHResizer());
-  cleanupFns.push(initVResizer(vizResizerRef,   vizHeight,   160, 480));
-  cleanupFns.push(initVResizer(tableResizerRef, tableHeight, 50,  200));
+  cleanupFns.push(initVResizer(vizResizerRef, vizHeight, 160, 480));
+  cleanupFns.push(initVResizer(tableResizerRef, tableHeight, 50, 200));
   applyInput();
-
-  // Observe the SVG/viz wrapper so layout auto-adapts when the panel resizes
   if (vizSvgRef.value) {
     vizRO = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        vizContainerW.value = entry.contentRect.width  || 640;
-        vizContainerH.value = entry.contentRect.height || 320;
-      }
+      for (const entry of entries) { vizContainerW.value = entry.contentRect.width || 640; vizContainerH.value = entry.contentRect.height || 320; }
     });
     vizRO.observe(vizSvgRef.value);
     const rect = vizSvgRef.value.getBoundingClientRect();
-    vizContainerW.value = rect.width  || 640;
-    vizContainerH.value = rect.height || 320;
+    vizContainerW.value = rect.width || 640; vizContainerH.value = rect.height || 320;
   }
 });
-
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown);
   clearTimeout(playTimer);
@@ -557,14 +553,11 @@ onBeforeUnmount(() => {
       <h2 class="navbar-title">{{ topic }}</h2>
       <img src="../../assets/logo.png" alt="Logo" />
     </div>
-
     <div class="slide-body">
       <div class="row-main">
         <div class="ll-root">
-
-          <!-- TOOLBAR -->
           <div class="ll-toolbar">
-            <label>Elements</label>
+            <label>Elements (max 7)</label>
             <input type="text" v-model="inpElems" placeholder="e.g. 1 2 3 4 5 6 7" class="ll-text-input" @keyup.enter="applyInput" />
             <button class="ll-viz-btn" @click="applyInput">&#9654; Visualize</button>
             <div class="ll-nav-controls">
@@ -576,40 +569,27 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- MAIN -->
           <div class="ll-main" ref="mainRef">
             <div class="ll-left-col" ref="leftColRef" :style="{ width: leftWidth + '%' }">
-
-              <!-- VIZ -->
               <div class="ll-viz-wrap" :style="{ height: vizHeight + 'px' }">
                 <div class="ll-perm-area" ref="vizSvgRef">
                   <div class="ll-ptrs">
                     <div class="ll-ptr-chip">root = <b class="ll-c-blue">{{ fmt(s.rootId !== null && s.rootId !== undefined ? ADDR(s.rootId) : null) }}</b></div>
                     <div v-if="s.currId !== null && s.currId !== undefined" class="ll-ptr-chip">node = <b class="ll-c-orange">{{ fmt(ADDR(s.currId)) }}</b></div>
                     <div v-else-if="steps.length" class="ll-ptr-chip">node = <b class="ll-c-orange">null</b></div>
-                    <div class="ll-ptr-chip po-result-chip">Preorder: <b>[ {{ s.visitedList ? s.visitedList.join(', ') : '' }} ]</b></div>
+                    <div v-if="s.isDone" class="ll-ptr-chip diameter-result-chip">Diameter = <b>{{ s.maxDiameter }}</b></div>
+                    <div v-else class="ll-ptr-chip diameter-calculating-chip">Diameter = <b>{{ s.maxDiameter }}</b> (calculating...)</div>
                   </div>
-
-                  <svg class="ll-svg"
-                    :viewBox="treeLayout.viewBox"
-                    preserveAspectRatio="xMidYMid meet"
-                    width="100%" height="100%">
-
-                    <!-- Edges -->
+                  <svg class="ll-svg" :viewBox="treeLayout.viewBox" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
                     <line v-for="(e, i) in treeLayout.edges" :key="'e-' + i"
                       :x1="edgeCoords(e).x1" :y1="edgeCoords(e).y1"
-                      :x2="edgeCoords(e).x2" :y2="edgeCoords(e).y2"
-                      class="bt-edge-line" />
-
-                    <!-- Pointer badges -->
+                      :x2="edgeCoords(e).x2" :y2="edgeCoords(e).y2" class="bt-edge-line" />
                     <g v-for="n in s.nodes" :key="'ptrs' + n.id">
                       <template v-for="p in getPointerBadgesForNode(n.id)" :key="p.name">
                         <text :x="p.x" :y="p.yText" text-anchor="middle" :fill="p.color" class="heap-ptr-txt">{{ p.label }}</text>
                         <text :x="p.x" :y="p.yArrow" text-anchor="middle" :fill="p.color" class="heap-ptr-arrow">&#8595;</text>
                       </template>
                     </g>
-
-                    <!-- Nodes -->
                     <foreignObject v-for="n in s.nodes" :key="'n' + n.id"
                       :x="pos(n.id).x - (treeLayout.nodeW || 132) / 2" :y="pos(n.id).y - (treeLayout.nodeBoxH || 44) / 2"
                       :width="treeLayout.nodeW || 132" :height="treeLayout.nodeH || 68">
@@ -617,7 +597,10 @@ onBeforeUnmount(() => {
                         <div class="ll-box" :class="nodeBoxClass(n)">
                           <div class="ll-node-top">
                             <div class="ll-ptr ll-ptr-prev"><small>left</small>{{ fmt(childAddr(n.left)) }}</div>
-                            <div class="ll-data">{{ n.val }}</div>
+                            <div class="ll-data">
+                              {{ n.val }}
+                              <small v-if="s.nodeHeights[n.id] !== undefined" class="node-h-tag">h={{ s.nodeHeights[n.id] }}</small>
+                            </div>
                             <div class="ll-ptr"><small>right</small>{{ fmt(childAddr(n.right)) }}</div>
                           </div>
                         </div>
@@ -629,14 +612,12 @@ onBeforeUnmount(() => {
               </div>
               <div class="ll-vresizer" ref="vizResizerRef"></div>
 
-              <!-- LEGEND -->
               <div class="ll-legend">
                 <span class="ll-leg"><span class="ll-legdot ll-legdot-normal"></span>unvisited</span>
-                <span class="ll-leg"><span class="ll-legdot ll-legdot-current"></span>active node (processing)</span>
-                <span class="ll-leg"><span class="ll-legdot ll-legdot-visited"></span>visited (printed in preorder)</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-current"></span>active node (calculating diameter)</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-resolved"></span>height computed (subtrees done)</span>
               </div>
 
-              <!-- CALL STACK / VAR FRAMES -->
               <div class="ll-table-area" :style="{ height: tableHeight + 'px' }">
                 <div class="ll-table-title">Call stack frames &mdash; innermost (top of stack) = current</div>
                 <div class="ll-stack-line">
@@ -657,15 +638,13 @@ onBeforeUnmount(() => {
               </div>
               <div class="ll-vresizer" ref="tableResizerRef"></div>
 
-              <!-- BADGE -->
               <div class="ll-badge-wrap">
-                <div class="ll-badge">{{ s.badge }}</div>
+                <div class="ll-badge" :class="{ 'diameter-badge-done': s.isDone }">{{ s.badge }}</div>
               </div>
             </div>
 
             <div class="ll-resizer" ref="hResizerRef"></div>
 
-            <!-- CODE PANEL -->
             <div class="ll-right-col">
               <div class="ll-code-panel">
                 <div class="ll-code-header">
@@ -681,47 +660,42 @@ onBeforeUnmount(() => {
                     <option value="python">Python</option>
                   </select>
                 </div>
-
-                <!-- Code tab -->
                 <div v-if="rightTab === 'code'" class="ll-code-scroll">
                   <pre class="ll-pre"><span v-for="(line, i) in codeLines" :key="i"
                     class="ll-codeline" :class="{ 'll-hl': line[0] && line[0] === s.code }"
                   >{{ line[1] === '' ? ' ' : line[1] }}
 </span></pre>
                 </div>
-
-                <!-- Pseudocode tab -->
                 <div v-else-if="rightTab === 'pseudo'" class="ll-code-scroll">
                   <pre class="ll-pre"><span v-for="(line, i) in PSEUDOCODE" :key="i" class="ll-codeline">{{ line === '' ? ' ' : line }}
 </span></pre>
                 </div>
-
-                <!-- Complexity tab -->
                 <div v-else class="ll-info-scroll">
-                  <h3>Time &amp; Space Complexity &mdash; Preorder Traversal</h3>
+                  <h3>Time &amp; Space Complexity &mdash; Diameter of Binary Tree</h3>
                   <table class="ll-complexity-table">
                     <thead><tr><th>Metric</th><th>Complexity</th><th>Why</th></tr></thead>
                     <tbody>
-                      <tr><td>Time Complexity</td><td>O(N)</td><td>Every node in the binary tree is visited exactly once.</td></tr>
+                      <tr><td>Time Complexity</td><td>O(N)</td><td>Every node is visited once during bottom-up height &amp; diameter calculation.</td></tr>
                       <tr><td>Space (Balanced Tree)</td><td>O(log N)</td><td>Call stack depth equals tree height h = log&#8322; N.</td></tr>
-                      <tr><td>Space (Skewed Tree)</td><td>O(N)</td><td>Degenerates to linked list — call stack depth = N.</td></tr>
+                      <tr><td>Space (Skewed Tree)</td><td>O(N)</td><td>Call stack depth equals N in a linear/skewed tree.</td></tr>
                     </tbody>
                   </table>
                   <p class="ll-note">
-                    <b>Preorder Pattern: Root &rarr; Left &rarr; Right</b><br/>
-                    Root is processed <i>first</i> before traversing either child subtree. Useful for cloning/copying a tree or evaluating prefix expressions.
+                    <b>Core Principle:</b><br/>
+                    <code>diameter(node) = leftHeight + rightHeight</code><br/>
+                    The diameter (longest path between any two nodes) passing through a given node equals the sum of the heights of its left and right subtrees. Global max diameter is updated at every node.
                   </p>
                   <h3>Algorithm Steps</h3>
-                  <p>1. Check base case: if <code>node == null</code>, return.<br/>
-                     2. Visit current node (print/process <code>node.data</code>).<br/>
-                     3. Recursively traverse left subtree: <code>preorder(node.left)</code>.<br/>
-                     4. Recursively traverse right subtree: <code>preorder(node.right)</code>.</p>
+                  <p>1. Base case: if <code>node == null</code>, return <code>0</code>.<br/>
+                     2. Recurse left: <code>leftHeight = calcHeight(node.left)</code>.<br/>
+                     3. Recurse right: <code>rightHeight = calcHeight(node.right)</code>.<br/>
+                     4. Update diameter: <code>maxDiameter = max(maxDiameter, leftHeight + rightHeight)</code>.<br/>
+                     5. Return height to parent: <code>1 + max(leftHeight, rightHeight)</code>.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- FOOTER -->
           <div class="ll-footer">
             Step {{ si + 1 }} / {{ steps.length || 1 }}
             <span class="ll-speed-wrap">Speed <input type="range" min="100" max="2000" step="100" v-model.number="speed" /></span>
@@ -741,7 +715,7 @@ onBeforeUnmount(() => {
   --blue: #3b82f6; --blue-light: #eff6ff;
   --green: #22c55e; --green-light: #f0fdf4;
   --orange: #f97316; --orange-light: #fff7ed;
-  --node: #1d4ed8; --nodeVisited: #15803d; --nodeCur: #c2410c;
+  --node: #1d4ed8; --nodeCur: #c2410c; --nodeResolved: #8b5cf6;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
   --radius: 8px; --radius-sm: 6px;
   background: var(--bg); color: var(--text);
@@ -775,7 +749,8 @@ onBeforeUnmount(() => {
 .ll-perm-area { display: flex; flex-direction: column; align-items: stretch; height: 100%; }
 .ll-ptrs { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px 4px; min-height: 36px; }
 .ll-ptr-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px 10px; font-size: 12px; font-family: monospace; box-shadow: var(--shadow-sm); }
-.po-result-chip { background: var(--green-light); border-color: var(--green); color: #15803d; font-weight: 600; }
+.diameter-result-chip      { background: #f3e8ff; border-color: #a855f7; color: #6b21a8; font-weight: 700; }
+.diameter-calculating-chip { background: var(--orange-light); border-color: var(--orange); color: #c2410c; font-weight: 600; }
 .ll-c-blue   { color: var(--blue); }
 .ll-c-orange { color: var(--orange); }
 .ll-c-green  { color: var(--green); }
@@ -785,10 +760,11 @@ onBeforeUnmount(() => {
 .heap-ptr-arrow { font-size: 14px; font-weight: 900; font-family: system-ui, sans-serif; }
 .ll-node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .ll-box { display: flex; flex-direction: column; border: 2px solid var(--blue); border-radius: var(--radius-sm); overflow: hidden; background: var(--node); width: 100%; height: 44px; color: #fff; animation: ll-pop .3s ease; box-shadow: var(--shadow-sm); transition: background .3s, border-color .3s; }
-.bt-box-visited { border-color: #22c55e !important; background: var(--nodeVisited) !important; box-shadow: 0 0 0 3px rgba(34,197,94,.3) !important; }
-.bt-box-cur { border-color: var(--orange) !important; background: var(--nodeCur) !important; box-shadow: 0 0 0 3px rgba(249,115,22,.25) !important; }
+.bt-box-cur      { border-color: var(--orange) !important; background: var(--nodeCur)      !important; box-shadow: 0 0 0 3px rgba(249,115,22,.25) !important; }
+.bt-box-resolved { border-color: #a855f7       !important; background: var(--nodeResolved) !important; box-shadow: 0 0 0 3px rgba(168,85,247,.3)  !important; }
 .ll-node-top { display: flex; flex: 1; width: 100%; height: 100%; }
-.ll-data { padding: 4px 4px; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ll-data { padding: 4px 4px; font-weight: 700; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; line-height: 1.1; }
+.node-h-tag { font-size: 9px; font-weight: 800; color: #fef08a; background: rgba(0,0,0,.35); padding: 0 4px; border-radius: 3px; margin-top: 1px; }
 .ll-ptr { padding: 2px 4px; background: rgba(0,0,0,.2); font-size: 10px; color: rgba(255,255,255,.85); border-left: 1px solid rgba(255,255,255,.15); font-family: 'Consolas', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex: 1; }
 .ll-ptr-prev { border-left: none; border-right: 1px solid rgba(255,255,255,.15); }
 .ll-ptr small { color: rgba(255,255,255,.5); font-size: 9px; }
@@ -798,9 +774,9 @@ onBeforeUnmount(() => {
 .ll-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
 .ll-leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
 .ll-legdot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; display: inline-block; }
-.ll-legdot-normal  { background: var(--node);        border: 1.5px solid var(--blue); }
-.ll-legdot-current { background: var(--nodeCur);     border: 1.5px solid var(--orange); }
-.ll-legdot-visited { background: var(--nodeVisited); border: 1.5px solid var(--green); }
+.ll-legdot-normal   { background: var(--node);         border: 1.5px solid var(--blue); }
+.ll-legdot-current  { background: var(--nodeCur);      border: 1.5px solid var(--orange); }
+.ll-legdot-resolved { background: var(--nodeResolved); border: 1.5px solid #a855f7; }
 .ll-table-area { flex-shrink: 0; padding: 8px 14px; border-bottom: 1px solid var(--border); overflow: auto; background: var(--surface); }
 .ll-table-title { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-style: italic; }
 .ll-stack-line { font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.8; }
@@ -810,6 +786,7 @@ onBeforeUnmount(() => {
 .ll-now { color: var(--orange); font-size: 10px; margin-left: 6px; }
 .ll-badge-wrap { padding: 6px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 36px; display: flex; align-items: center; background: var(--surface); }
 .ll-badge { display: inline-block; padding: 4px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--coral); background: var(--coral-light); font-size: 11px; color: var(--coral-dark); line-height: 1.4; word-break: break-word; font-weight: 500; }
+.diameter-badge-done { border-left-color: #a855f7 !important; background: #f3e8ff !important; color: #6b21a8 !important; }
 .ll-code-panel { display: flex; flex-direction: column; height: 75%; overflow: hidden; }
 .ll-code-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; box-shadow: var(--shadow-sm); flex-wrap: wrap; }
 .ll-tabbar { display: flex; gap: 4px; flex-wrap: wrap; }

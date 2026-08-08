@@ -2,8 +2,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 
 const props = defineProps({
-  topic:    { type: String, default: 'Binary Tree — Preorder Traversal' },
-  subTopic: { type: String, default: 'Root → Left → Right Recursive Traversal' },
+  topic:    { type: String, default: 'Binary Tree — Count Leaf Nodes' },
+  subTopic: { type: String, default: 'Recursive Traversal Approach (Base case: left == null && right == null)' },
 });
 
 const ADDR = (i) => (i + 1) * 1000;
@@ -18,89 +18,108 @@ const fmt  = (a) => {
 /* ------------------------------------------------------------------ */
 const CODES = {
   java: [
-    ['', 'class BinaryTree {'],
-    ['', '    Node root;'],
-    ['', ''],
-    ['c_call',       '    void preorder(Node node) {'],
-    ['c_nullCheck',  '        if (node == null) {'],
-    ['c_nullReturn', '            return;'],
-    ['',             '        }'],
-    ['c_visit',      '        System.out.print(node.data + " ");'],
-    ['c_recurLeft',  '        preorder(node.left);'],
-    ['c_recurRight', '        preorder(node.right);'],
-    ['c_return',     '    }'],
-    ['', ''],
-    ['c_main',       '    public static void main(String[] args) {'],
-    ['c_main',       '        BinaryTree tree = new BinaryTree();'],
-    ['c_main',       '        // ... build tree level order ...'],
-    ['c_main',       '        tree.preorder(tree.root);'],
-    ['c_main',       '    }'],
-    ['', '}'],
+    ['',              'class BinaryTree {'],
+    ['',              '    Node root;'],
+    ['',              ''],
+    ['c_call',        '    int countLeafNodes(Node node) {'],
+    ['c_nullCheck',   '        if (node == null) {'],
+    ['c_nullReturn',  '            return 0;'],
+    ['',              '        }'],
+    ['c_leafCheck',   '        if (node.left == null && node.right == null) {'],
+    ['c_leafReturn',  '            return 1;'],
+    ['',              '        }'],
+    ['c_recurLeft',   '        int leftLeaves  = countLeafNodes(node.left);'],
+    ['c_recurRight',  '        int rightLeaves = countLeafNodes(node.right);'],
+    ['c_compute',     '        int count = leftLeaves + rightLeaves;'],
+    ['c_return',      '        return count;'],
+    ['',              '    }'],
+    ['',              ''],
+    ['c_main',        '    public static void main(String[] args) {'],
+    ['c_main',        '        BinaryTree tree = new BinaryTree();'],
+    ['c_main',        '        // ... build tree level order ...'],
+    ['c_main',        '        int total = tree.countLeafNodes(tree.root);'],
+    ['c_main',        '        System.out.println("Leaf Nodes: " + total);'],
+    ['c_main',        '    }'],
+    ['',              '}'],
   ],
   c: [
-    ['c_call',       'void preorder(struct Node* node) {'],
-    ['c_nullCheck',  '    if (node == NULL) {'],
-    ['c_nullReturn', '        return;'],
-    ['',             '    }'],
-    ['c_visit',      '    printf("%d ", node->data);'],
-    ['c_recurLeft',  '    preorder(node->left);'],
-    ['c_recurRight', '    preorder(node->right);'],
-    ['c_return',     '}'],
-    ['', ''],
-    ['c_main',       'int main() {'],
-    ['c_main',       '    // ... build tree level order ...'],
-    ['c_main',       '    preorder(root);'],
-    ['c_main',       '    return 0;'],
-    ['', '}'],
+    ['c_call',        'int countLeafNodes(struct Node* node) {'],
+    ['c_nullCheck',   '    if (node == NULL) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_leafCheck',   '    if (node->left == NULL && node->right == NULL) {'],
+    ['c_leafReturn',  '        return 1;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftLeaves  = countLeafNodes(node->left);'],
+    ['c_recurRight',  '    int rightLeaves = countLeafNodes(node->right);'],
+    ['c_compute',     '    int count = leftLeaves + rightLeaves;'],
+    ['c_return',      '    return count;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int total = countLeafNodes(root);'],
+    ['c_main',        '    printf("Leaf Nodes: %d\\n", total);'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
   ],
   cpp: [
-    ['c_call',       'void preorder(Node* node) {'],
-    ['c_nullCheck',  '    if (node == nullptr) {'],
-    ['c_nullReturn', '        return;'],
-    ['',             '    }'],
-    ['c_visit',      '    cout << node->data << " ";'],
-    ['c_recurLeft',  '    preorder(node->left);'],
-    ['c_recurRight', '    preorder(node->right);'],
-    ['c_return',     '}'],
-    ['', ''],
-    ['c_main',       'int main() {'],
-    ['c_main',       '    // ... build tree level order ...'],
-    ['c_main',       '    preorder(root);'],
-    ['c_main',       '    return 0;'],
-    ['', '}'],
+    ['c_call',        'int countLeafNodes(Node* node) {'],
+    ['c_nullCheck',   '    if (node == nullptr) {'],
+    ['c_nullReturn',  '        return 0;'],
+    ['',              '    }'],
+    ['c_leafCheck',   '    if (node->left == nullptr && node->right == nullptr) {'],
+    ['c_leafReturn',  '        return 1;'],
+    ['',              '    }'],
+    ['c_recurLeft',   '    int leftLeaves  = countLeafNodes(node->left);'],
+    ['c_recurRight',  '    int rightLeaves = countLeafNodes(node->right);'],
+    ['c_compute',     '    int count = leftLeaves + rightLeaves;'],
+    ['c_return',      '    return count;'],
+    ['',              '}'],
+    ['',              ''],
+    ['c_main',        'int main() {'],
+    ['c_main',        '    // ... build tree level order ...'],
+    ['c_main',        '    int total = countLeafNodes(root);'],
+    ['c_main',        '    cout << "Leaf Nodes: " << total << endl;'],
+    ['c_main',        '    return 0;'],
+    ['',              '}'],
   ],
   python: [
-    ['c_call',       'def preorder(node):'],
-    ['c_nullCheck',  '    if node is None:'],
-    ['c_nullReturn', '        return'],
-    ['c_visit',      '    print(node.data, end=" ")'],
-    ['c_recurLeft',  '    preorder(node.left)'],
-    ['c_recurRight', '    preorder(node.right)'],
-    ['c_return',     '    # return'],
-    ['', ''],
-    ['c_main',       '# build tree level order ...'],
-    ['c_main',       'preorder(root)'],
+    ['c_call',        'def count_leaf_nodes(node):'],
+    ['c_nullCheck',   '    if node is None:'],
+    ['c_nullReturn',  '        return 0'],
+    ['c_leafCheck',   '    if node.left is None and node.right is None:'],
+    ['c_leafReturn',  '        return 1'],
+    ['c_recurLeft',   '    left_leaves  = count_leaf_nodes(node.left)'],
+    ['c_recurRight',  '    right_leaves = count_leaf_nodes(node.right)'],
+    ['c_compute',     '    count = left_leaves + right_leaves'],
+    ['c_return',      '    return count'],
+    ['',              ''],
+    ['c_main',        '# build tree level order ...'],
+    ['c_main',        'total = count_leaf_nodes(root)'],
+    ['c_main',        'print("Leaf Nodes:", total)'],
   ],
 };
 
-/* ------------------------------------------------------------------ */
-/* Pseudocode                                                          */
-/* ------------------------------------------------------------------ */
 const PSEUDOCODE = [
-  'procedure preorder(node):',
+  'function countLeafNodes(node):',
   '    if node is null:',
-  '        return',
+  '        return 0          // Base case 1: empty subtree',
   '',
-  '    visit(node.data)        // 1. Root',
-  '    preorder(node.left)     // 2. Left Subtree',
-  '    preorder(node.right)    // 3. Right Subtree',
+  '    if node.left is null and node.right is null:',
+  '        return 1          // Base case 2: leaf node found',
+  '',
+  '    leftLeaves  = countLeafNodes(node.left)',
+  '    rightLeaves = countLeafNodes(node.right)',
+  '',
+  '    count = leftLeaves + rightLeaves',
+  '    return count',
+  '',
+  '// Total Leaf Nodes = left subtree leaves + right subtree leaves',
 ];
 
 function frame(title, rows) { return { title, rows }; }
 
-/* ------------------------------------------------------------------ */
-/* Level order tree builder (instant — silent)                         */
-/* ------------------------------------------------------------------ */
 function parseInputTokens(inputStr) {
   const raw = inputStr.trim().split(/[\s,]+/).filter(Boolean).slice(0, 15);
   return raw.map(tok => {
@@ -156,92 +175,100 @@ function buildLevelOrderTree(values) {
   return { nodes, edges, rootId };
 }
 
-/* ------------------------------------------------------------------ */
-/* Step generation                                                     */
-/* ------------------------------------------------------------------ */
 function buildSteps(nodes, edges, rootId) {
-  const steps       = [];
-  const nodesMap    = {};
+  const steps    = [];
+  const nodesMap = {};
   nodes.forEach(n => (nodesMap[n.id] = n));
-
-  const visitedList = [];
   const stackFrames = [];
+  let totalCount = null;
 
-  function childAddrHelper(childId) {
+  function childAddrStr(childId) {
     if (childId === null || childId === undefined) return 'null';
     return nodesMap[childId] ? fmt(nodesMap[childId].addr) : 'null';
   }
 
-  function snap(currId, badge, code) {
+  function snap(currId, badge, code, computedMap) {
     steps.push({
-      nodes:        nodes.map(n => ({ ...n })),
-      edges:        edges.map(e => ({ ...e })),
+      nodes:       nodes.map(n => ({ ...n })),
+      edges:       edges.map(e => ({ ...e })),
       rootId,
-      currId:       currId ?? null,
-      visitedList:  [...visitedList],
+      currId:      currId ?? null,
       badge,
       code,
-      vars:         stackFrames.map(f => frame(f.title, f.rows)),
+      totalCount,
+      vars:        stackFrames.map(f => frame(f.title, f.rows)),
+      nodeCounts:  computedMap ? { ...computedMap } : {},
     });
   }
 
   if (rootId === null) {
-    snap(null, 'Tree is empty — preorder traversal cannot run.', 'c_main');
+    totalCount = 0;
+    snap(null, 'Tree is empty — countLeafNodes returns 0.', 'c_main', {});
     return steps;
   }
 
-  snap(null, 'main(): Start Preorder Traversal by calling preorder(root).', 'c_main');
+  const nodeCounts = {};
+  snap(null, 'main(): Start counting leaf nodes by calling countLeafNodes(root).', 'c_main', nodeCounts);
 
-  function traverse(nodeId) {
-    const isNull = nodeId === null || nodeId === undefined;
-    const node   = isNull ? null : nodesMap[nodeId];
+  function countLeafNodes(nodeId) {
+    const isNull  = nodeId === null || nodeId === undefined;
+    const node    = isNull ? null : nodesMap[nodeId];
+    const nodeStr = isNull ? 'null' : fmt(ADDR(nodeId));
 
-    const frameTitle = `preorder(node = ${isNull ? 'null' : fmt(ADDR(nodeId))})`;
-    const frameRows  = [
-      ['node', isNull ? 'null' : fmt(ADDR(nodeId)), true],
-      ...(isNull ? [] : [['node.data', '' + node.val]]),
-    ];
+    stackFrames.push({
+      title: 'countLeafNodes(node = ' + nodeStr + ')',
+      rows:  [['node', nodeStr, true], ...(isNull ? [] : [['node.data', '' + node.val]])],
+    });
 
-    stackFrames.push({ title: frameTitle, rows: frameRows });
-
-    // Step 1: Function Entry
-    snap(nodeId, `Call ${frameTitle}`, 'c_call');
-
-    // Step 2: Base Check
-    snap(nodeId, `Check: node == null? → ${isNull ? 'TRUE (Base case)' : 'FALSE'}`, 'c_nullCheck');
+    snap(nodeId, 'Call countLeafNodes(node = ' + nodeStr + ')', 'c_call', nodeCounts);
+    snap(nodeId, 'Check: node == null? -> ' + (isNull ? 'TRUE (Base case: return 0)' : 'FALSE'), 'c_nullCheck', nodeCounts);
 
     if (isNull) {
-      snap(null, `node is null → Base case reached. Return to caller.`, 'c_nullReturn');
+      snap(null, 'node is null -> Base case reached. return 0.', 'c_nullReturn', nodeCounts);
       stackFrames.pop();
-      return;
+      return 0;
     }
 
-    // Step 3: Visit (Print Root Data)
-    visitedList.push(node.val);
-    snap(nodeId, `Visit node @${node.addr} → Process root data: ${node.val}. Output: [${visitedList.join(', ')}]`, 'c_visit');
+    const isLeaf = node.left === null && node.right === null;
+    snap(nodeId, 'Check leaf: node.left == null && node.right == null? -> ' + (isLeaf ? 'TRUE (Leaf node found!)' : 'FALSE'), 'c_leafCheck', nodeCounts);
 
-    // Step 4: Recurse Left Subtree
-    snap(nodeId, `Recurse LEFT: call preorder(node.left = ${childAddrHelper(node.left)})`, 'c_recurLeft');
-    traverse(node.left);
+    if (isLeaf) {
+      nodeCounts[nodeId] = 1;
+      snap(nodeId, 'Leaf node (' + node.val + ' @' + node.addr + ') found! Return 1.', 'c_leafReturn', nodeCounts);
+      stackFrames.pop();
+      return 1;
+    }
 
-    // Step 5: Recurse Right Subtree
-    snap(nodeId, `Left subtree done for node ${node.val} (@${node.addr}). Recurse RIGHT: call preorder(node.right = ${childAddrHelper(node.right)})`, 'c_recurRight');
-    traverse(node.right);
+    snap(nodeId, 'Recurse LEFT: call countLeafNodes(node.left = ' + childAddrStr(node.left) + ')', 'c_recurLeft', nodeCounts);
+    const leftLeaves = countLeafNodes(node.left);
 
-    // Step 6: Function Return
-    snap(nodeId, `Completed preorder for node ${node.val} (@${node.addr}). Pop stack frame & return.`, 'c_return');
+    const topFrame = stackFrames[stackFrames.length - 1];
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftLeaves', '' + leftLeaves]];
+
+    snap(nodeId,
+      'Left subtree leaf count of node ' + node.val + ' is ' + leftLeaves + '. Recurse RIGHT: call countLeafNodes(node.right = ' + childAddrStr(node.right) + ')',
+      'c_recurRight', nodeCounts);
+    const rightLeaves = countLeafNodes(node.right);
+
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftLeaves', '' + leftLeaves], ['rightLeaves', '' + rightLeaves]];
+
+    const cnt = leftLeaves + rightLeaves;
+    topFrame.rows = [['node', fmt(ADDR(nodeId)), true], ['node.data', '' + node.val], ['leftLeaves', '' + leftLeaves], ['rightLeaves', '' + rightLeaves], ['count', '' + cnt]];
+    nodeCounts[nodeId] = cnt;
+
+    snap(nodeId, 'count = leftLeaves(' + leftLeaves + ') + rightLeaves(' + rightLeaves + ') = ' + cnt, 'c_compute', nodeCounts);
+    snap(nodeId, 'return ' + cnt + ' from countLeafNodes(node ' + node.val + ' @' + node.addr + ')', 'c_return', nodeCounts);
+
     stackFrames.pop();
+    return cnt;
   }
 
-  traverse(rootId);
-  snap(null, `Preorder Traversal Complete! Final Output: [${visitedList.join(', ')}]`, 'c_main');
-
+  const result = countLeafNodes(rootId);
+  totalCount = result;
+  snap(null, 'countLeafNodes complete! Leaf Nodes: ' + result, 'c_main', nodeCounts);
   return steps;
 }
 
-/* ------------------------------------------------------------------ */
-/* Reactive state                                                      */
-/* ------------------------------------------------------------------ */
 const inpElems  = ref('1 2 3 4 5 6 7');
 const lang      = ref('java');
 const rightTab  = ref('code');
@@ -249,68 +276,44 @@ const speed     = ref(900);
 const si        = ref(0);
 const playing   = ref(false);
 const steps     = ref([]);
-
 const vizHeight   = ref(320);
 const tableHeight = ref(90);
 const leftWidth   = ref(58);
-
 const mainRef         = ref(null);
 const leftColRef      = ref(null);
 const hResizerRef     = ref(null);
 const vizResizerRef   = ref(null);
 const tableResizerRef = ref(null);
-
 let playTimer = null;
 
 const currentStep = computed(() => steps.value[si.value] || {
-  nodes: [], edges: [], vars: [], badge: '', rootId: null, currId: null, visitedList: [],
+  nodes: [], edges: [], vars: [], badge: '', rootId: null, currId: null, nodeCounts: {}, totalCount: null,
 });
 const s         = computed(() => currentStep.value);
 const codeLines = computed(() => CODES[lang.value] || []);
-
 const nodesById = computed(() => {
   const m = {};
   (currentStep.value.nodes || []).forEach(n => (m[n.id] = n));
   return m;
 });
-
 function childAddr(childId) {
   if (childId === null || childId === undefined) return null;
   return nodesById.value[childId] ? nodesById.value[childId].addr : null;
 }
 
-/* ------------------------------------------------------------------ */
-/* Viz container size (observed via ResizeObserver)                    */
-/* ------------------------------------------------------------------ */
 const vizContainerW = ref(640);
 const vizContainerH = ref(320);
 const vizSvgRef     = ref(null);
 let   vizRO         = null;
 
-/* ------------------------------------------------------------------ */
-/* Tree layout — fixed node size & fixed canvas viewBox (max 7 nodes)   */
-/* ------------------------------------------------------------------ */
-
-// Fixed node dimensions — constant at all times (matches BinaryTreeCreation.vue)
-const NODE_W     = 132;
-const NODE_BOX_H = 44;
-const NODE_H     = 68;   // box height + address label space
-
-// Fixed grid parameters designed specifically for max 7 nodes
-const MAX_COLS   = 7;
-const MAX_DEPTH  = 2;
-const SPACING_X  = 70;
-const LEVEL_H    = 80;
+const NODE_W = 132, NODE_BOX_H = 44, NODE_H = 68;
+const MAX_COLS = 7, MAX_DEPTH = 2, SPACING_X = 70, LEVEL_H = 80;
 const PAD_TOP = 35, PAD_BOTTOM = 0, PAD_SIDE = 50;
-
-const START_Y    = PAD_TOP + NODE_BOX_H / 2; // 22
-
-// Fixed ViewBox dimensions — invariant across all animation steps
-const TREE_W        = PAD_SIDE + MAX_COLS * SPACING_X; // 540
-const FIXED_TOTAL_W = TREE_W + PAD_SIDE;                // 590
-const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM; // 176
-const FIXED_VIEWBOX = `0 0 ${FIXED_TOTAL_W} ${FIXED_TOTAL_H}`;
-
+const START_Y = PAD_TOP + NODE_BOX_H / 2;
+const TREE_W = PAD_SIDE + MAX_COLS * SPACING_X;
+const FIXED_TOTAL_W = TREE_W + PAD_SIDE;
+const FIXED_TOTAL_H = START_Y + MAX_DEPTH * LEVEL_H + NODE_H / 2 + PAD_BOTTOM;
+const FIXED_VIEWBOX = '0 0 ' + FIXED_TOTAL_W + ' ' + FIXED_TOTAL_H;
 const treeLayout = computed(() => {
   const step = currentStep.value;
   if (!step || !step.nodes || !step.nodes.length) {
@@ -401,57 +404,43 @@ const treeLayout = computed(() => {
   };
 });
 
-function pos(id) {
-  return treeLayout.value.positions[id] || { x: 0, y: 0 };
-}
-
+function pos(id) { return treeLayout.value.positions[id] || { x: 0, y: 0 }; }
 function edgeCoords(e) {
-  const pFrom    = pos(e.from);
-  const pTo      = pos(e.to);
+  const pFrom = pos(e.from), pTo = pos(e.to);
   const fromNode = nodesById.value[e.from];
-  const isLeft   = fromNode && fromNode.left === e.to;
-  const hw       = (treeLayout.value.nodeW || 132) / 2 * 0.6;
-  const nbh      = (treeLayout.value.nodeBoxH || 44);
-  return {
-    x1: isLeft ? pFrom.x - hw : pFrom.x + hw,
-    y1: pFrom.y,
-    x2: pTo.x,
-    y2: pTo.y - nbh / 2,
-  };
+  const isLeft = fromNode && fromNode.left === e.to;
+  const hw = (treeLayout.value.nodeW || 132) / 2 * 0.6;
+  const nbh = treeLayout.value.nodeBoxH || 44;
+  return { x1: isLeft ? pFrom.x - hw : pFrom.x + hw, y1: pFrom.y, x2: pTo.x, y2: pTo.y - nbh / 2 };
 }
-
 function getPointerBadgesForNode(id) {
   const step = currentStep.value;
   if (!step) return [];
   const ptrs = [];
   if (step.rootId === id) ptrs.push({ name: 'root', label: 'root', color: '#3b82f6' });
   if (step.currId === id) ptrs.push({ name: 'node', label: 'node', color: '#f97316' });
-
-  const count  = ptrs.length;
+  const count = ptrs.length;
   if (!count) return [];
-  const nodeX  = pos(id).x;
-  const nodeY  = pos(id).y;
-  const nbh    = treeLayout.value.nodeBoxH || 44;
+  const nodeX = pos(id).x, nodeY = pos(id).y;
+  const nbh = treeLayout.value.nodeBoxH || 44;
   const spread = Math.min(30, (treeLayout.value.nodeW || 132) * 0.22);
   return ptrs.map((p, i) => {
     let xOffset = 0;
     if (count === 2) xOffset = i === 0 ? -spread : spread;
-    else if (count === 3) xOffset = (i - 1) * spread;
     return { ...p, x: nodeX + xOffset, yText: nodeY - nbh / 2 - 22, yArrow: nodeY - nbh / 2 - 8 };
   });
 }
-
 function nodeBoxClass(n) {
   const step = currentStep.value;
   if (!step) return '';
   if (step.currId === n.id) return 'bt-box-cur';
-  if ((step.visitedList || []).includes(n.val)) return 'bt-box-visited';
+  if ((step.nodeCounts || {})[n.id] !== undefined) {
+    if (n.left === null && n.right === null) return 'bt-box-leaf';
+    return 'bt-box-resolved';
+  }
   return '';
 }
 
-/* ------------------------------------------------------------------ */
-/* Playback controls                                                   */
-/* ------------------------------------------------------------------ */
 function applyInput() {
   const tokens = parseInputTokens(inpElems.value);
   clearTimeout(playTimer);
@@ -461,18 +450,15 @@ function applyInput() {
   steps.value = buildSteps(nodes, edges, rootId);
   si.value = 0;
 }
-
 function stepBy(n) {
   if (!steps.value.length) return;
   si.value = Math.min(steps.value.length - 1, Math.max(0, si.value + n));
 }
-
 function tick() {
   if (si.value >= steps.value.length - 1) { playing.value = false; clearTimeout(playTimer); return; }
   si.value++;
   playTimer = setTimeout(tick, speed.value);
 }
-
 function togglePlay() {
   if (!steps.value.length) return;
   if (playing.value) { playing.value = false; clearTimeout(playTimer); return; }
@@ -480,12 +466,8 @@ function togglePlay() {
   playing.value = true;
   tick();
 }
-
 watch(speed, nv => { if (playing.value) { clearTimeout(playTimer); playTimer = setTimeout(tick, nv); } });
 
-/* ------------------------------------------------------------------ */
-/* Resizers                                                            */
-/* ------------------------------------------------------------------ */
 function initHResizer() {
   const rsz = hResizerRef.value;
   if (!rsz) return;
@@ -493,12 +475,9 @@ function initHResizer() {
   const onDown = e => { dragging = true; startX = e.clientX; startW = leftWidth.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
   const onMove = e => { if (!dragging) return; const cW = rsz.parentElement.getBoundingClientRect().width; leftWidth.value = Math.max(20, Math.min(80, startW + ((e.clientX - startX) / cW) * 100)); };
   const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
-  rsz.addEventListener('mousedown', onDown);
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', onUp);
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
 }
-
 function initVResizer(refElem, valueRef, minH, maxH) {
   const rsz = refElem.value;
   if (!rsz) return;
@@ -506,43 +485,31 @@ function initVResizer(refElem, valueRef, minH, maxH) {
   const onDown = e => { dragging = true; startY = e.clientY; startH = valueRef.value; rsz.classList.add('drag'); document.body.style.userSelect = 'none'; };
   const onMove = e => { if (!dragging) return; valueRef.value = Math.max(minH, Math.min(maxH, startH + (e.clientY - startY))); };
   const onUp   = () => { if (!dragging) return; dragging = false; rsz.classList.remove('drag'); document.body.style.userSelect = ''; };
-  rsz.addEventListener('mousedown', onDown);
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', onUp);
+  rsz.addEventListener('mousedown', onDown); document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
   return () => { rsz.removeEventListener('mousedown', onDown); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
 }
-
 let cleanupFns = [];
-
 function onKeydown(e) {
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
   if (e.key === 'ArrowRight') stepBy(1);
   else if (e.key === 'ArrowLeft') stepBy(-1);
   else if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
 }
-
 onMounted(() => {
   document.addEventListener('keydown', onKeydown);
   cleanupFns.push(initHResizer());
-  cleanupFns.push(initVResizer(vizResizerRef,   vizHeight,   160, 480));
-  cleanupFns.push(initVResizer(tableResizerRef, tableHeight, 50,  200));
+  cleanupFns.push(initVResizer(vizResizerRef, vizHeight, 160, 480));
+  cleanupFns.push(initVResizer(tableResizerRef, tableHeight, 50, 200));
   applyInput();
-
-  // Observe the SVG/viz wrapper so layout auto-adapts when the panel resizes
   if (vizSvgRef.value) {
     vizRO = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        vizContainerW.value = entry.contentRect.width  || 640;
-        vizContainerH.value = entry.contentRect.height || 320;
-      }
+      for (const entry of entries) { vizContainerW.value = entry.contentRect.width || 640; vizContainerH.value = entry.contentRect.height || 320; }
     });
     vizRO.observe(vizSvgRef.value);
     const rect = vizSvgRef.value.getBoundingClientRect();
-    vizContainerW.value = rect.width  || 640;
-    vizContainerH.value = rect.height || 320;
+    vizContainerW.value = rect.width || 640; vizContainerH.value = rect.height || 320;
   }
 });
-
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeydown);
   clearTimeout(playTimer);
@@ -557,14 +524,11 @@ onBeforeUnmount(() => {
       <h2 class="navbar-title">{{ topic }}</h2>
       <img src="../../assets/logo.png" alt="Logo" />
     </div>
-
     <div class="slide-body">
       <div class="row-main">
         <div class="ll-root">
-
-          <!-- TOOLBAR -->
           <div class="ll-toolbar">
-            <label>Elements</label>
+            <label>Elements (max 7)</label>
             <input type="text" v-model="inpElems" placeholder="e.g. 1 2 3 4 5 6 7" class="ll-text-input" @keyup.enter="applyInput" />
             <button class="ll-viz-btn" @click="applyInput">&#9654; Visualize</button>
             <div class="ll-nav-controls">
@@ -576,40 +540,27 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- MAIN -->
           <div class="ll-main" ref="mainRef">
             <div class="ll-left-col" ref="leftColRef" :style="{ width: leftWidth + '%' }">
-
-              <!-- VIZ -->
               <div class="ll-viz-wrap" :style="{ height: vizHeight + 'px' }">
                 <div class="ll-perm-area" ref="vizSvgRef">
                   <div class="ll-ptrs">
                     <div class="ll-ptr-chip">root = <b class="ll-c-blue">{{ fmt(s.rootId !== null && s.rootId !== undefined ? ADDR(s.rootId) : null) }}</b></div>
                     <div v-if="s.currId !== null && s.currId !== undefined" class="ll-ptr-chip">node = <b class="ll-c-orange">{{ fmt(ADDR(s.currId)) }}</b></div>
                     <div v-else-if="steps.length" class="ll-ptr-chip">node = <b class="ll-c-orange">null</b></div>
-                    <div class="ll-ptr-chip po-result-chip">Preorder: <b>[ {{ s.visitedList ? s.visitedList.join(', ') : '' }} ]</b></div>
+                    <div v-if="s.totalCount !== null" class="ll-ptr-chip count-result-chip">Leaf Nodes: <b>{{ s.totalCount }}</b></div>
+                    <div v-else class="ll-ptr-chip count-calculating-chip">Counting Leaf Nodes…</div>
                   </div>
-
-                  <svg class="ll-svg"
-                    :viewBox="treeLayout.viewBox"
-                    preserveAspectRatio="xMidYMid meet"
-                    width="100%" height="100%">
-
-                    <!-- Edges -->
+                  <svg class="ll-svg" :viewBox="treeLayout.viewBox" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
                     <line v-for="(e, i) in treeLayout.edges" :key="'e-' + i"
                       :x1="edgeCoords(e).x1" :y1="edgeCoords(e).y1"
-                      :x2="edgeCoords(e).x2" :y2="edgeCoords(e).y2"
-                      class="bt-edge-line" />
-
-                    <!-- Pointer badges -->
+                      :x2="edgeCoords(e).x2" :y2="edgeCoords(e).y2" class="bt-edge-line" />
                     <g v-for="n in s.nodes" :key="'ptrs' + n.id">
                       <template v-for="p in getPointerBadgesForNode(n.id)" :key="p.name">
                         <text :x="p.x" :y="p.yText" text-anchor="middle" :fill="p.color" class="heap-ptr-txt">{{ p.label }}</text>
                         <text :x="p.x" :y="p.yArrow" text-anchor="middle" :fill="p.color" class="heap-ptr-arrow">&#8595;</text>
                       </template>
                     </g>
-
-                    <!-- Nodes -->
                     <foreignObject v-for="n in s.nodes" :key="'n' + n.id"
                       :x="pos(n.id).x - (treeLayout.nodeW || 132) / 2" :y="pos(n.id).y - (treeLayout.nodeBoxH || 44) / 2"
                       :width="treeLayout.nodeW || 132" :height="treeLayout.nodeH || 68">
@@ -617,7 +568,12 @@ onBeforeUnmount(() => {
                         <div class="ll-box" :class="nodeBoxClass(n)">
                           <div class="ll-node-top">
                             <div class="ll-ptr ll-ptr-prev"><small>left</small>{{ fmt(childAddr(n.left)) }}</div>
-                            <div class="ll-data">{{ n.val }}</div>
+                            <div class="ll-data">
+                              {{ n.val }}
+                              <small v-if="s.nodeCounts[n.id] !== undefined" class="node-c-tag">
+                                {{ (n.left === null && n.right === null) ? 'leaf (1)' : 'leaves=' + s.nodeCounts[n.id] }}
+                              </small>
+                            </div>
                             <div class="ll-ptr"><small>right</small>{{ fmt(childAddr(n.right)) }}</div>
                           </div>
                         </div>
@@ -629,14 +585,13 @@ onBeforeUnmount(() => {
               </div>
               <div class="ll-vresizer" ref="vizResizerRef"></div>
 
-              <!-- LEGEND -->
               <div class="ll-legend">
                 <span class="ll-leg"><span class="ll-legdot ll-legdot-normal"></span>unvisited</span>
-                <span class="ll-leg"><span class="ll-legdot ll-legdot-current"></span>active node (processing)</span>
-                <span class="ll-leg"><span class="ll-legdot ll-legdot-visited"></span>visited (printed in preorder)</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-current"></span>active node</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-leaf"></span>leaf node (count = 1)</span>
+                <span class="ll-leg"><span class="ll-legdot ll-legdot-resolved"></span>internal node resolved</span>
               </div>
 
-              <!-- CALL STACK / VAR FRAMES -->
               <div class="ll-table-area" :style="{ height: tableHeight + 'px' }">
                 <div class="ll-table-title">Call stack frames &mdash; innermost (top of stack) = current</div>
                 <div class="ll-stack-line">
@@ -657,15 +612,13 @@ onBeforeUnmount(() => {
               </div>
               <div class="ll-vresizer" ref="tableResizerRef"></div>
 
-              <!-- BADGE -->
               <div class="ll-badge-wrap">
-                <div class="ll-badge">{{ s.badge }}</div>
+                <div class="ll-badge" :class="{ 'count-badge-done': s.totalCount !== null }">{{ s.badge }}</div>
               </div>
             </div>
 
             <div class="ll-resizer" ref="hResizerRef"></div>
 
-            <!-- CODE PANEL -->
             <div class="ll-right-col">
               <div class="ll-code-panel">
                 <div class="ll-code-header">
@@ -681,47 +634,42 @@ onBeforeUnmount(() => {
                     <option value="python">Python</option>
                   </select>
                 </div>
-
-                <!-- Code tab -->
                 <div v-if="rightTab === 'code'" class="ll-code-scroll">
                   <pre class="ll-pre"><span v-for="(line, i) in codeLines" :key="i"
                     class="ll-codeline" :class="{ 'll-hl': line[0] && line[0] === s.code }"
                   >{{ line[1] === '' ? ' ' : line[1] }}
 </span></pre>
                 </div>
-
-                <!-- Pseudocode tab -->
                 <div v-else-if="rightTab === 'pseudo'" class="ll-code-scroll">
                   <pre class="ll-pre"><span v-for="(line, i) in PSEUDOCODE" :key="i" class="ll-codeline">{{ line === '' ? ' ' : line }}
 </span></pre>
                 </div>
-
-                <!-- Complexity tab -->
                 <div v-else class="ll-info-scroll">
-                  <h3>Time &amp; Space Complexity &mdash; Preorder Traversal</h3>
+                  <h3>Time &amp; Space Complexity &mdash; Count Leaf Nodes</h3>
                   <table class="ll-complexity-table">
                     <thead><tr><th>Metric</th><th>Complexity</th><th>Why</th></tr></thead>
                     <tbody>
-                      <tr><td>Time Complexity</td><td>O(N)</td><td>Every node in the binary tree is visited exactly once.</td></tr>
+                      <tr><td>Time Complexity</td><td>O(N)</td><td>Every node in the tree is visited once to check if it is a leaf.</td></tr>
                       <tr><td>Space (Balanced Tree)</td><td>O(log N)</td><td>Call stack depth equals tree height h = log&#8322; N.</td></tr>
-                      <tr><td>Space (Skewed Tree)</td><td>O(N)</td><td>Degenerates to linked list — call stack depth = N.</td></tr>
+                      <tr><td>Space (Skewed Tree)</td><td>O(N)</td><td>Call stack depth equals N in a linear/skewed tree.</td></tr>
                     </tbody>
                   </table>
                   <p class="ll-note">
-                    <b>Preorder Pattern: Root &rarr; Left &rarr; Right</b><br/>
-                    Root is processed <i>first</i> before traversing either child subtree. Useful for cloning/copying a tree or evaluating prefix expressions.
+                    <b>Core Recurrence:</b><br/>
+                    <code>count(node) = node is leaf ? 1 : count(node.left) + count(node.right)</code><br/>
+                    A node is a leaf node if both <code>node.left == null</code> and <code>node.right == null</code>. If node is null, return 0.
                   </p>
                   <h3>Algorithm Steps</h3>
-                  <p>1. Check base case: if <code>node == null</code>, return.<br/>
-                     2. Visit current node (print/process <code>node.data</code>).<br/>
-                     3. Recursively traverse left subtree: <code>preorder(node.left)</code>.<br/>
-                     4. Recursively traverse right subtree: <code>preorder(node.right)</code>.</p>
+                  <p>1. Base case 1: if <code>node == null</code>, return <code>0</code>.<br/>
+                     2. Base case 2: if <code>node.left == null &amp;&amp; node.right == null</code>, return <code>1</code>.<br/>
+                     3. Recurse left: <code>leftLeaves = countLeafNodes(node.left)</code>.<br/>
+                     4. Recurse right: <code>rightLeaves = countLeafNodes(node.right)</code>.<br/>
+                     5. Compute and return: <code>leftLeaves + rightLeaves</code>.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- FOOTER -->
           <div class="ll-footer">
             Step {{ si + 1 }} / {{ steps.length || 1 }}
             <span class="ll-speed-wrap">Speed <input type="range" min="100" max="2000" step="100" v-model.number="speed" /></span>
@@ -741,7 +689,7 @@ onBeforeUnmount(() => {
   --blue: #3b82f6; --blue-light: #eff6ff;
   --green: #22c55e; --green-light: #f0fdf4;
   --orange: #f97316; --orange-light: #fff7ed;
-  --node: #1d4ed8; --nodeVisited: #15803d; --nodeCur: #c2410c;
+  --node: #1d4ed8; --nodeCur: #c2410c; --nodeResolved: #15803d;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
   --radius: 8px; --radius-sm: 6px;
   background: var(--bg); color: var(--text);
@@ -775,7 +723,8 @@ onBeforeUnmount(() => {
 .ll-perm-area { display: flex; flex-direction: column; align-items: stretch; height: 100%; }
 .ll-ptrs { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px 4px; min-height: 36px; }
 .ll-ptr-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px 10px; font-size: 12px; font-family: monospace; box-shadow: var(--shadow-sm); }
-.po-result-chip { background: var(--green-light); border-color: var(--green); color: #15803d; font-weight: 600; }
+.count-result-chip      { background: var(--green-light); border-color: var(--green); color: #15803d; font-weight: 700; }
+.count-calculating-chip { background: var(--orange-light); border-color: var(--orange); color: #c2410c; font-weight: 600; }
 .ll-c-blue   { color: var(--blue); }
 .ll-c-orange { color: var(--orange); }
 .ll-c-green  { color: var(--green); }
@@ -785,10 +734,12 @@ onBeforeUnmount(() => {
 .heap-ptr-arrow { font-size: 14px; font-weight: 900; font-family: system-ui, sans-serif; }
 .ll-node-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; }
 .ll-box { display: flex; flex-direction: column; border: 2px solid var(--blue); border-radius: var(--radius-sm); overflow: hidden; background: var(--node); width: 100%; height: 44px; color: #fff; animation: ll-pop .3s ease; box-shadow: var(--shadow-sm); transition: background .3s, border-color .3s; }
-.bt-box-visited { border-color: #22c55e !important; background: var(--nodeVisited) !important; box-shadow: 0 0 0 3px rgba(34,197,94,.3) !important; }
-.bt-box-cur { border-color: var(--orange) !important; background: var(--nodeCur) !important; box-shadow: 0 0 0 3px rgba(249,115,22,.25) !important; }
+.bt-box-cur      { border-color: var(--orange) !important; background: var(--nodeCur)      !important; box-shadow: 0 0 0 3px rgba(249,115,22,.25) !important; }
+.bt-box-leaf     { border-color: #10b981       !important; background: #059669              !important; box-shadow: 0 0 0 3px rgba(16,185,129,.35) !important; }
+.bt-box-resolved { border-color: #22c55e       !important; background: var(--nodeResolved) !important; box-shadow: 0 0 0 3px rgba(34,197,94,.3)   !important; }
 .ll-node-top { display: flex; flex: 1; width: 100%; height: 100%; }
-.ll-data { padding: 4px 4px; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ll-data { padding: 4px 4px; font-weight: 700; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; line-height: 1.1; }
+.node-c-tag { font-size: 9px; font-weight: 800; color: #fef08a; background: rgba(0,0,0,.35); padding: 0 4px; border-radius: 3px; margin-top: 1px; }
 .ll-ptr { padding: 2px 4px; background: rgba(0,0,0,.2); font-size: 10px; color: rgba(255,255,255,.85); border-left: 1px solid rgba(255,255,255,.15); font-family: 'Consolas', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; flex: 1; }
 .ll-ptr-prev { border-left: none; border-right: 1px solid rgba(255,255,255,.15); }
 .ll-ptr small { color: rgba(255,255,255,.5); font-size: 9px; }
@@ -798,9 +749,10 @@ onBeforeUnmount(() => {
 .ll-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
 .ll-leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
 .ll-legdot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; display: inline-block; }
-.ll-legdot-normal  { background: var(--node);        border: 1.5px solid var(--blue); }
-.ll-legdot-current { background: var(--nodeCur);     border: 1.5px solid var(--orange); }
-.ll-legdot-visited { background: var(--nodeVisited); border: 1.5px solid var(--green); }
+.ll-legdot-normal   { background: var(--node);         border: 1.5px solid var(--blue); }
+.ll-legdot-current  { background: var(--nodeCur);      border: 1.5px solid var(--orange); }
+.ll-legdot-leaf     { background: #059669;             border: 1.5px solid #10b981; }
+.ll-legdot-resolved { background: var(--nodeResolved); border: 1.5px solid #22c55e; }
 .ll-table-area { flex-shrink: 0; padding: 8px 14px; border-bottom: 1px solid var(--border); overflow: auto; background: var(--surface); }
 .ll-table-title { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-style: italic; }
 .ll-stack-line { font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.8; }
@@ -810,6 +762,7 @@ onBeforeUnmount(() => {
 .ll-now { color: var(--orange); font-size: 10px; margin-left: 6px; }
 .ll-badge-wrap { padding: 6px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 36px; display: flex; align-items: center; background: var(--surface); }
 .ll-badge { display: inline-block; padding: 4px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--coral); background: var(--coral-light); font-size: 11px; color: var(--coral-dark); line-height: 1.4; word-break: break-word; font-weight: 500; }
+.count-badge-done { border-left-color: var(--green) !important; background: var(--green-light) !important; color: #166534 !important; }
 .ll-code-panel { display: flex; flex-direction: column; height: 75%; overflow: hidden; }
 .ll-code-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; box-shadow: var(--shadow-sm); flex-wrap: wrap; }
 .ll-tabbar { display: flex; gap: 4px; flex-wrap: wrap; }
