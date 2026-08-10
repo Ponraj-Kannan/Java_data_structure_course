@@ -21,19 +21,19 @@ import DFSGraph from '../../components/04-Graph/DFSGraph.vue';
 
 ---
 
-<UnDirectedUnWeightedGraphMatrix topic="Undirected Unweighted Graph" subTopic="2D Adjacency Matrix Representation" />
-
----
-
-<UnDirectedWeightedGraphMatrix topic="Undirected Weighted Graph" subTopic="2D Adjacency Matrix Representation" />
-
----
-
 <DirectedUnWeightedGraphMatrix topic="Directed Unweighted Graph" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
+<UnDirectedUnWeightedGraphMatrix topic="Undirected Unweighted Graph" subTopic="2D Adjacency Matrix Representation" />
+
+---
+
 <DirectedWeightedGraphMatrix topic="Directed Weighted Graph" subTopic="2D Adjacency Matrix Representation" />
+
+---
+
+<UnDirectedWeightedGraphMatrix topic="Undirected Weighted Graph" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
