@@ -38,23 +38,3 @@ import DFSGraph from '../../components/04-Graph/DFSGraph.vue';
 ---
 
 <BFSGraph topic="Breadth-First Search (BFS)" subTopic="Graph Traversal Algorithm" />
-
----
-
-<DFSGraph topic="Depth-First Search (DFS)" subTopic="Graph Traversal Algorithm" />
-
----
-
-<UnDirectedUnWeightedGraphList topic="Undirected Unweighted Graph" subTopic="Adjacency List (Collections) Representation" />
-
----
-
-<UnDirectedWeightedGraphList topic="Undirected Weighted Graph" subTopic="Adjacency List (Collections) Representation" />
-
----
-
-<DirectedUnWeightedGraphList topic="Directed Unweighted Graph" subTopic="Adjacency List (Collections) Representation" />
-
----
-
-<DirectedWeightedGraphList topic="Directed Weighted Graph" subTopic="Adjacency List (Collections) Representation" />
