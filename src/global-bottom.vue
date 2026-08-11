@@ -433,4 +433,4 @@ onUnmounted(() => window.removeEventListener('keydown', handleAltT))
   opacity: 0;
   transform: translateY(4px) scale(0.97);
 }
-</style>
+</style> 
