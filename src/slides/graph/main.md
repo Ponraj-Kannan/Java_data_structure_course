@@ -21,35 +21,35 @@ import DFSGraph from '../../components/04-Graph/DFSGraph.vue';
 
 ---
 
-<DirectedUnWeightedGraphMatrix topic="Directed Unweighted Graph" subTopic="2D Adjacency Matrix Representation" />
+<DirectedUnWeightedGraphMatrix topic="Directed Unweighted Graph - 2D Adjacency Matrix Representation" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
-<UnDirectedUnWeightedGraphMatrix topic="Undirected Unweighted Graph" subTopic="2D Adjacency Matrix Representation" />
+<UnDirectedUnWeightedGraphMatrix topic="Undirected Unweighted Graph - 2D Adjacency Matrix Representation" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
-<DirectedWeightedGraphMatrix topic="Directed Weighted Graph" subTopic="2D Adjacency Matrix Representation" />
+<DirectedWeightedGraphMatrix topic="Directed Weighted Graph - 2D Adjacency Matrix Representation" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
-<UnDirectedWeightedGraphMatrix topic="Undirected Weighted Graph" subTopic="2D Adjacency Matrix Representation" />
+<UnDirectedWeightedGraphMatrix topic="Undirected Weighted Graph - 2D Adjacency Matrix Representation" subTopic="2D Adjacency Matrix Representation" />
 
 ---
 
-<UnDirectedUnWeightedGraphList topic="Undirected Unweighted Graph" subTopic="Adjacency List (Collections) Representation" />
+<UnDirectedUnWeightedGraphList topic="Undirected Unweighted Graph - List Representation" subTopic="Adjacency List (Collections) Representation" />
 
 ---
 
-<UnDirectedWeightedGraphList topic="Undirected Weighted Graph" subTopic="Adjacency List (Collections) Representation" />
+<UnDirectedWeightedGraphList topic="Undirected Weighted Graph - List Representation" subTopic="Adjacency List (Collections) Representation" />
 
 ---
 
-<DirectedUnWeightedGraphList topic="Directed Unweighted Graph" subTopic="Adjacency List (Collections) Representation" />
+<DirectedUnWeightedGraphList topic="Directed Unweighted Graph - List Representation" subTopic="Adjacency List (Collections) Representation" />
 
 ---
 
-<DirectedWeightedGraphList topic="Directed Weighted Graph" subTopic="Adjacency List (Collections) Representation" />
+<DirectedWeightedGraphList topic="Directed Weighted Graph - List Representation" subTopic="Adjacency List (Collections) Representation" />
 
 ---
 
