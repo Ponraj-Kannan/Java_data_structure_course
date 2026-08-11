@@ -10,7 +10,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
-
 const feedbackText = ref('')
 const status = ref('idle')   // idle | submitting | success | error
 const errorMsg = ref('')
