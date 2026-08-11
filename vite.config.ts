@@ -43,6 +43,10 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://abwglswctneuuroegfur.supabase.co'),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFid2dsc3djdG5ldXVyb2VnZnVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MjYyNjEsImV4cCI6MjEwMjAwMjI2MX0.IfoNZ7Xg18QdLbzzKXr9SNybNW_oDH1AzWrriLQReek')
+    },
     plugins: [
       {
         name: 'api-middleware',
