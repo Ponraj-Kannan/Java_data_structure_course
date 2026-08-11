@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 // Load .env into process.env so API handlers (emails.js, zoho-auth.js)
 // can access ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET, etc. during local dev
 dotenv.config()
-
 export default defineConfig(({ mode }) => {
   console.log(">>>> VITE CONFIG LOADED <<<<", mode);
   const env = loadEnv(mode, process.cwd(), '')
