@@ -656,7 +656,7 @@ function onKeydown(e) {
 
 const mainRef = ref(null);
 const leftColRef = ref(null);
-const hResizerRef = ref(null);
+const hResizerRef = ref(null); 
 const vizResizerRef = ref(null);
 const tableResizerRef = ref(null);
 
@@ -807,7 +807,7 @@ const nodePositions = computed(() => {
                                 {{ s.matrix && s.matrix[uIdx - 1] ? s.matrix[uIdx - 1][vIdx - 1] : 0 }}
                               </td>
                             </tr>
-                          </tbody>
+                          </tbody> 
                         </table>
                       </div>
                     </div>

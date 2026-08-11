@@ -119,6 +119,9 @@ const CODES = {
     ['', 'public:'],
     ['c_ctor_entry', '    Graph(int vertices) {'],
     ['c_alloc_list', '        adjList.resize(vertices);'],
+    ['c_init_loop', '        for (int i = 0; i < vertices; i++) {'],
+    ['c_add_empty', '            adjList[i] = vector<pair<int, int>>();'],
+    ['', '        }'],
     ['c_ctor_done', '    }'],
     ['', ''],
     ['c_add_edge_entry', '    void addEdge(int source, int destination, int weight) {'],
@@ -146,7 +149,9 @@ const CODES = {
   python: [
     ['', 'class Graph:'],
     ['c_ctor_entry', '    def __init__(self, vertices):'],
-    ['c_alloc_list', '        self.adjList = [[] for _ in range(vertices)]'],
+    ['c_alloc_list', '        self.adjList = []'],
+    ['c_init_loop', '        for i in range(vertices):'],
+    ['c_add_empty', '            self.adjList.append([])'],
     ['c_ctor_done', '        pass'],
     ['', ''],
     ['c_add_edge_entry', '    def addEdge(self, source, destination, weight):'],
@@ -170,7 +175,10 @@ const CODES = {
   javascript: [
     ['', 'class Graph {'],
     ['c_ctor_entry', '    constructor(vertices) {'],
-    ['c_alloc_list', '        this.adjList = Array.from({ length: vertices }, () => []);'],
+    ['c_alloc_list', '        this.adjList = [];'],
+    ['c_init_loop', '        for (let i = 0; i < vertices; i++) {'],
+    ['c_add_empty', '            this.adjList.push([]);'],
+    ['', '        }'],
     ['c_ctor_done', '    }'],
     ['', ''],
     ['c_add_edge_entry', '    addEdge(source, destination, weight) {'],
@@ -282,25 +290,34 @@ function buildSteps(numV, edgeList) {
     V: 0, adjList: {}, activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: -1, curJ: -1, edges: []
   });
 
-  const initialAdj = {};
-  for (let i = 0; i < V; i++) initialAdj[i] = [];
-
   steps.push({
     badge: `adjList = new ArrayList<>(); → Allocated List for ${V} vertex buckets`,
     code: 'c_alloc_list',
     vars: [frame('main()', [['vertices', String(V)]]), frame('Graph()', [['vertices', String(V)], ['adjList', `List(${V})`]])],
-    V, adjList: cloneAdj(initialAdj), activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: -1, curJ: -1, edges: []
+    V: 0, adjList: {}, activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: -1, curJ: -1, edges: []
   });
 
-  // Init loop buckets
+  // Init loop buckets step by step
+  const tempAdj = {};
   for (let i = 0; i < V; i++) {
+    steps.push({
+      badge: `for (int i = ${i}; i < vertices (${V}); i++) → Loop iteration i = ${i}`,
+      code: 'c_init_loop',
+      vars: [frame('main()', [['vertices', String(V)]]), frame('Graph()', [['vertices', String(V)], ['i', String(i)]])],
+      V, adjList: cloneAdj(tempAdj), activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: i, curJ: -1, edges: []
+    });
+
+    tempAdj[i] = [];
+
     steps.push({
       badge: `adjList.add(new ArrayList<>()); → Added empty list for vertex ${i}`,
       code: 'c_add_empty',
-      vars: [frame('main()', [['vertices', String(V)]]), frame('Graph()', [['i', String(i)], [`adjList[${i}]`, '[]']])],
-      V, adjList: cloneAdj(initialAdj), activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: i, curJ: -1, edges: []
+      vars: [frame('main()', [['vertices', String(V)]]), frame('Graph()', [['vertices', String(V)], ['i', String(i)], [`adjList[${i}]`, '[]']])],
+      V, adjList: cloneAdj(tempAdj), activeU: -1, activeV: -1, activeW: -1, activeK: -1, curI: i, curJ: -1, edges: []
     });
   }
+
+  const initialAdj = cloneAdj(tempAdj);
 
   steps.push({
     badge: `Graph constructor finished. Graph instance created with ${V} empty Adjacency List buckets.`,
@@ -476,6 +493,11 @@ const stepsData = reactive({ steps: buildSteps(4, defaultEdgeList) });
 const steps = computed(() => stepsData.steps);
 const s = computed(() => steps.value[Math.max(0, Math.min(si.value, steps.value.length - 1))] || {});
 const codeLines = computed(() => CODES[lang.value] || []);
+
+const createdVertices = computed(() => {
+  if (!s.value || !s.value.adjList) return [];
+  return Object.keys(s.value.adjList).map(Number).sort((a, b) => a - b);
+});
 
 watch(lang, () => {
   const currentV = s.value.V ?? 4;
@@ -692,30 +714,30 @@ onBeforeUnmount(() => {
                     <div class="ll-adj-card">
                       <div class="ll-card-header">
                         <div class="ll-card-title-main">adj</div>
-                        <div class="ll-card-subtitle">{{ s.V ?? 0 }} inner lists</div>
+                        <div class="ll-card-subtitle">{{ createdVertices.length }} inner lists</div>
                       </div>
-                      <div v-if="(s.V ?? 0) === 0" class="ll-empty-matrix-msg">
-                        No Collections to display (Vertices = 0). Enter a vertex count &gt; 0 to initialize graph.
+                      <div v-if="(s.V ?? 0) === 0 || createdVertices.length === 0" class="ll-empty-matrix-msg">
+                        No Collections instantiated yet. Step through constructor to add inner lists.
                       </div>
                       <div v-else class="ll-adj-wrap">
                         <div
-                          v-for="uIdx in s.V"
-                          :key="'row-' + (uIdx - 1)"
+                          v-for="uVal in createdVertices"
+                          :key="'row-' + uVal"
                           class="ll-adj-row"
                         >
                           <!-- Vertex Box (Purple) -->
                           <div
                             class="ll-adj-v-head"
                             :class="{
-                              'll-adj-v-head-active-u': (uIdx - 1) === s.activeU || (uIdx - 1) === s.curI,
-                              'll-adj-v-head-active-v': (uIdx - 1) === s.activeV || (uIdx - 1) === s.curJ
+                              'll-adj-v-head-active-u': uVal === s.activeU || uVal === s.curI,
+                              'll-adj-v-head-active-v': uVal === s.activeV || uVal === s.curJ
                             }"
                           >
                             <div class="ll-ptr-tag-wrap" style="position: absolute; bottom: 100%; margin-bottom: 2px; left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none;">
-                              <span v-if="(uIdx - 1) === s.activeU" class="ll-ptr-lbl ll-lbl-blue">u</span>
-                              <span v-if="(uIdx - 1) === s.activeV" class="ll-ptr-lbl ll-lbl-purple">v</span>
+                              <span v-if="uVal === s.activeU" class="ll-ptr-lbl ll-lbl-blue">u</span>
+                              <span v-if="uVal === s.activeV" class="ll-ptr-lbl ll-lbl-purple">v</span>
                             </div>
-                            {{ uIdx - 1 }}
+                            {{ uVal }}
                           </div>
 
                           <!-- Connection Arrow -->
@@ -725,16 +747,16 @@ onBeforeUnmount(() => {
 
                           <!-- Neighbor Element Boxes (Soft Teal, Pair v (w)) -->
                           <div class="ll-adj-items">
-                            <template v-if="s.adjList && s.adjList[uIdx - 1] && s.adjList[uIdx - 1].length">
+                            <template v-if="s.adjList && s.adjList[uVal] && s.adjList[uVal].length">
                               <span
-                                v-for="(neighbor, nIdx) in s.adjList[uIdx - 1]"
-                                :key="'nbr-' + (uIdx - 1) + '-' + nIdx"
+                                v-for="(neighbor, nIdx) in s.adjList[uVal]"
+                                :key="'nbr-' + uVal + '-' + nIdx"
                                 class="ll-adj-chip"
                                 :class="{
-                                  'll-adj-chip-hovered': isEdgeHovered(uIdx - 1, neighbor.v),
-                                  'll-adj-chip-added': (uIdx - 1) === s.curI && neighbor.v === s.curJ
+                                  'll-adj-chip-hovered': isEdgeHovered(uVal, neighbor.v),
+                                  'll-adj-chip-added': uVal === s.curI && neighbor.v === s.curJ
                                 }"
-                                @mouseenter="hoveredEdge = { u: uIdx - 1, v: neighbor.v }"
+                                @mouseenter="hoveredEdge = { u: uVal, v: neighbor.v }"
                                 @mouseleave="hoveredEdge = null"
                               >
                                 {{ neighbor.v }} <span class="ll-chip-weight">({{ neighbor.w }})</span>
@@ -1153,16 +1175,21 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-gutter: stable;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 24px;
+  padding-top: 10px;
   padding-right: 2px;
+  padding-left: 10px;
 }
-.ll-adj-row { display: flex; align-items: center; gap: 8px; flex-shrink: 0; height: 45px; }
+@keyframes ll-row-pop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.ll-adj-row { display: flex; align-items: center; gap: 8px; flex-shrink: 0; height: 45px; animation: ll-row-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* Left Vertex Box (Soft Indigo/Purple) */
 .ll-adj-v-head {
