@@ -26,10 +26,6 @@ src: ./slides/binary-search-tree/main.md
 src: ./slides/graph/main.md
 ---
 
-<!-- ---
-src: ./slides/graph-algo/main.md
---- -->
-
 ---
 src: ./slides/Hashing/main.md
 ---
