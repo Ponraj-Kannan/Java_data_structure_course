@@ -13,9 +13,6 @@ const sessionTitle = computed(() => $frontmatter.value?.sessionTitle || $frontma
 // ── Info Button state ──────────────────────────────────────────────────────
 const showInfoPopover = ref(false)
 
-// ── Feedback Modal state ──────────────────────────────────────────────────
-const showFeedbackModal = ref(false)
-
 /** Resolve the source file path for the current slide.
  *  Priority:
  *  1. currentSlideRoute.meta?.slide?.filepath  — resolved absolute path set by Slidev parser
@@ -115,17 +112,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleAltT))
           </svg>
         </button>
 
-        <!-- Feedback Button -->
-        <button
-          @click="showFeedbackModal = true"
-          class="fp-admin-btn"
-          title="Send Feedback"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fp-icon">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        </button>
-
         <!-- User profile and logout -->
         <div class="fp-user-badge" :title="`${authState.userName} (${authState.userEmail})`">
           <img v-if="authState.userPicture" :src="authState.userPicture" class="fp-avatar" referrerpolicy="no-referrer" />
@@ -188,15 +174,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleAltT))
         </div>
       </div>
     </div>
-    <!-- Feedback Modal -->
-    <FeedbackModal
-      v-if="showFeedbackModal"
-      :userEmail="authState.userEmail"
-      :userName="authState.userName"
-      :slideNumber="currentPage"
-      :slideFile="currentFilePath"
-      @close="showFeedbackModal = false"
-    />
   </div>
 </template>
 
@@ -432,4 +409,4 @@ onUnmounted(() => window.removeEventListener('keydown', handleAltT))
   opacity: 0;
   transform: translateY(4px) scale(0.97);
 }
-</style> 
+</style>
