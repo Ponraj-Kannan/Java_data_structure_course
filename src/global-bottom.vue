@@ -2,7 +2,6 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useNav, useSlideContext } from '@slidev/client'
 import LoginOverlay from './components/LoginOverlay.vue'
-import FeedbackModal from './components/FeedbackModal.vue'
 import { authState, logout } from './auth'
 
 const { currentPage, total, currentSlideRoute, go } = useNav()
