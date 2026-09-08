@@ -230,7 +230,7 @@ topic: slide6
 
 <DequePeekRear topic="Dequeue Using LinkedList - Peek At Rear"/>
 
----
+<!-- ---
 topic: slide7
 ---
 
@@ -240,7 +240,7 @@ topic: slide7
 topic: slide8
 ---
 
-<DequeSize topic="Dequeue Using LinkedList - Size"/>
+<DequeSize topic="Dequeue Using LinkedList - Size"/> -->
 
 
 
