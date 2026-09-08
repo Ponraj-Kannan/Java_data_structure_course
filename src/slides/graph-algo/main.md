@@ -1,3 +1,5 @@
+---
+
 <GraphTerminology topic="Graph — Fundamental Terminology" subTopic="Core Concepts, Vertices, Edges & Graph Structures" />
 
 ---
